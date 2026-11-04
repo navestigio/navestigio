@@ -117,9 +117,9 @@ h1 em{background:linear-gradient(90deg,var(--accent),var(--time),var(--accent));
 .btn{transition:transform .2s,box-shadow .2s,border-color .2s}
 .btn:hover{transform:translateY(-2px)}
 .btn.primary:hover{box-shadow:0 8px 28px -8px rgba(110,166,236,.7)}
-.shot,.q,.sec li,.arts>div,.steps li{transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
+.shot,.q,.arts>div,.steps li{transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
 .shot:hover{transform:translateY(-4px);box-shadow:0 24px 60px -20px rgba(110,166,236,.35),var(--shadow);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
-.q:hover,.sec li:hover,.arts>div:hover,.steps li:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 50%,var(--line));box-shadow:0 14px 34px -18px rgba(110,166,236,.45)}
+.q:hover,.arts>div:hover,.steps li:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 50%,var(--line));box-shadow:0 14px 34px -18px rgba(110,166,236,.45)}
 @media (prefers-reduced-motion:no-preference){
   .hero>div:first-child>*{animation:subir .7s cubic-bezier(.2,.8,.2,1) both}
   .hero>div:first-child>:nth-child(2){animation-delay:.08s}.hero>div:first-child>:nth-child(3){animation-delay:.16s}
@@ -138,7 +138,20 @@ h1 em{background:linear-gradient(90deg,var(--accent),var(--time),var(--accent));
   @supports (animation-timeline:view()){
     section h2,section .sub,.q,.sec li,.arts>div,.steps li,.split .shot,.ax li{animation:revelar linear both;animation-timeline:view();animation-range:entry 0% entry 40%}
   }
+  @supports (animation-timeline:view()){
+    .sec li::before{animation:marcarCaja linear both;animation-timeline:view();animation-range:entry 30% cover 35%}
+    .sec li::after{animation:marcarCheck linear both;animation-timeline:view();animation-range:entry 30% cover 35%}
+  }
 }
+/* Garantías: cada casilla se marca como verificada; al pasar el cursor se ilumina */
+.sec li::before{transition:background .3s,box-shadow .3s,transform .3s}
+.sec li::after{content:"";position:absolute;left:5.5px;top:calc(.45em + 2px);width:5px;height:10px;border:solid var(--bg);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(0);transform-origin:center;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.sec li b{transition:color .25s}
+.sec li:hover::before{background:var(--time);box-shadow:0 0 0 4px rgba(115,214,174,.18),0 0 18px rgba(115,214,174,.5);transform:scale(1.08)}
+.sec li:hover::after{transform:rotate(45deg) scale(1)}
+.sec li:hover b{color:var(--time)}
+@keyframes marcarCaja{from{background:var(--time-soft)}to{background:var(--time)}}
+@keyframes marcarCheck{from{transform:rotate(45deg) scale(0)}to{transform:rotate(45deg) scale(1)}}
 @keyframes subir{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @keyframes revelar{from{opacity:0;transform:translateY(28px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes brillo{to{background-position:200% 0}}
