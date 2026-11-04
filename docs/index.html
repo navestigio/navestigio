@@ -105,6 +105,50 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
   section{padding:52px 0}
   .ax li{grid-template-columns:1fr}
 }
+
+/* ---- Efectos visuales (solo CSS; se desactivan si el sistema pide reducir movimiento) ---- */
+.hero{position:relative}
+main{overflow-x:clip}
+.hero::before{content:"";position:absolute;inset:-10% -20% auto auto;width:640px;height:640px;border-radius:50%;background:radial-gradient(circle,rgba(110,166,236,.16),transparent 62%);pointer-events:none;z-index:-1}
+body{background:radial-gradient(1200px 600px at 80% -10%,rgba(110,166,236,.10),transparent 60%),radial-gradient(900px 500px at -10% 30%,rgba(115,214,174,.06),transparent 60%),var(--bg);background-attachment:fixed}
+h1 em{background:linear-gradient(90deg,var(--accent),var(--time),var(--accent));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.trail-art .d{filter:drop-shadow(0 0 6px rgba(115,214,174,.55))}
+.trail-art .lens,.trail-art .handle{filter:drop-shadow(0 0 14px rgba(110,166,236,.35))}
+.btn{transition:transform .2s,box-shadow .2s,border-color .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary:hover{box-shadow:0 8px 28px -8px rgba(110,166,236,.7)}
+.shot,.q,.sec li,.arts>div,.steps li{transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
+.shot:hover{transform:translateY(-4px);box-shadow:0 24px 60px -20px rgba(110,166,236,.35),var(--shadow);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.q:hover,.sec li:hover,.arts>div:hover,.steps li:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 50%,var(--line));box-shadow:0 14px 34px -18px rgba(110,166,236,.45)}
+@media (prefers-reduced-motion:no-preference){
+  .hero>div:first-child>*{animation:subir .7s cubic-bezier(.2,.8,.2,1) both}
+  .hero>div:first-child>:nth-child(2){animation-delay:.08s}.hero>div:first-child>:nth-child(3){animation-delay:.16s}
+  .hero>div:first-child>:nth-child(4){animation-delay:.24s}.hero>div:first-child>:nth-child(5){animation-delay:.32s}
+  h1 em{animation:brillo 6s linear infinite}
+  .hero::before{animation:respirar 7s ease-in-out infinite}
+  .trail-art .t,.trail-art .gap{animation:fluir 1.6s linear infinite}
+  .trail-art .gap{animation:fluir 1.6s linear infinite,parpadeo 2.4s ease-in-out infinite}
+  .trail-art .d{transform-box:fill-box;transform-origin:center;animation:aparecer .5s cubic-bezier(.3,1.6,.5,1) both,latir 3.2s ease-in-out infinite}
+  .trail-art .d:nth-of-type(1){animation-delay:.2s,1s}.trail-art .d:nth-of-type(2){animation-delay:.32s,1.3s}.trail-art .d:nth-of-type(3){animation-delay:.44s,1.6s}
+  .trail-art .d:nth-of-type(4){animation-delay:.56s,1.9s}.trail-art .d:nth-of-type(5){animation-delay:.68s,2.2s}.trail-art .d:nth-of-type(6){animation-delay:.8s,2.5s}
+  .trail-art .d:nth-of-type(7){animation-delay:.92s,2.8s}.trail-art .d:nth-of-type(8){animation-delay:1.04s,3.1s}
+  .trail-art .scan{animation:lupaEntra .9s cubic-bezier(.2,.8,.2,1) .3s both,rastrear 9s ease-in-out 1.2s infinite}
+  .logo .dot{animation:latir 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  .wrap>.shot{animation:subir .9s cubic-bezier(.2,.8,.2,1) .35s both}
+  @supports (animation-timeline:view()){
+    section h2,section .sub,.q,.sec li,.arts>div,.steps li,.split .shot,.ax li{animation:revelar linear both;animation-timeline:view();animation-range:entry 0% entry 40%}
+  }
+}
+@keyframes subir{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes revelar{from{opacity:0;transform:translateY(28px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes brillo{to{background-position:200% 0}}
+@keyframes respirar{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+@keyframes fluir{to{stroke-dashoffset:-16}}
+@keyframes parpadeo{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes aparecer{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+@keyframes latir{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes lupaEntra{from{opacity:0;transform:translate(40px,40px) rotate(8deg)}to{opacity:1;transform:none}}
+@keyframes rastrear{0%,100%{transform:translate(0,0)}25%{transform:translate(-60px,50px)}50%{transform:translate(-110px,95px)}75%{transform:translate(50px,-55px)}}
 </style>
 </head>
 <body>
@@ -133,8 +177,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
       <path class="t" d="M265 140 C285 120 310 110 350 60"/>
       <circle class="d" cx="30" cy="330" r="5"/><circle class="d" cx="80" cy="298" r="6"/><circle class="d" cx="130" cy="250" r="7"/><circle class="d" cx="175" cy="232" r="8"/><circle class="d" cx="205" cy="200" r="9"/>
       <circle class="d" cx="265" cy="140" r="9"/><circle class="d" cx="310" cy="108" r="10"/><circle class="d" cx="350" cy="60" r="11"/>
-      <circle class="lens" cx="232" cy="170" r="70"/>
-      <line class="handle" x1="282" y1="220" x2="335" y2="273"/>
+      <g class="scan"><circle class="lens" cx="232" cy="170" r="70"/>
+      <line class="handle" x1="282" y1="220" x2="335" y2="273"/></g>
     </svg>
   </div>
 </div>
