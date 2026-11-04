@@ -107,7 +107,8 @@ function fmt(v, kind, tz) {
   if (isNaN(d)) return "¿?";
   return `${p2(d.getUTCDate())}/${p2(d.getUTCMonth()+1)}/${d.getUTCFullYear()} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())}`;
 }
-function tzLabel(tz) { if (typeof tz === "string") return tz; if (tz == 0) return "UTC"; const h = Math.abs(tz); const s = Number.isInteger(h) ? String(h) : `${Math.floor(h)}:${p2(Math.round((h%1)*60))}`; return "GMT" + (tz > 0 ? "+" : "-") + s; }
+// Zonas IANA: solo letras, dígitos, _ + - / (así nunca llega HTML al innerHTML ni al nombre de archivo)
+function tzLabel(tz) { if (typeof tz === "string") return tz.replace(/[^\w+\-\/]/g, ""); if (tz == 0) return "UTC"; const h = Math.abs(tz); const s = Number.isInteger(h) ? String(h) : `${Math.floor(h)}:${p2(Math.round((h%1)*60))}`; return "GMT" + (tz > 0 ? "+" : "-") + s; }
 function detectKind(name, samples) {
   if (NAME_EXCLUDE.test(name)) return null;
   const hinted = NAME_HINT.test(name);

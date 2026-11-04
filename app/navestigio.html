@@ -1044,7 +1044,8 @@ function fmt(v, kind, tz) {
   if (isNaN(d)) return "¿?";
   return `${p2(d.getUTCDate())}/${p2(d.getUTCMonth()+1)}/${d.getUTCFullYear()} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())}`;
 }
-function tzLabel(tz) { if (typeof tz === "string") return tz; if (tz == 0) return "UTC"; const h = Math.abs(tz); const s = Number.isInteger(h) ? String(h) : `${Math.floor(h)}:${p2(Math.round((h%1)*60))}`; return "GMT" + (tz > 0 ? "+" : "-") + s; }
+// Zonas IANA: solo letras, dígitos, _ + - / (así nunca llega HTML al innerHTML ni al nombre de archivo)
+function tzLabel(tz) { if (typeof tz === "string") return tz.replace(/[^\w+\-\/]/g, ""); if (tz == 0) return "UTC"; const h = Math.abs(tz); const s = Number.isInteger(h) ? String(h) : `${Math.floor(h)}:${p2(Math.round((h%1)*60))}`; return "GMT" + (tz > 0 ? "+" : "-") + s; }
 function detectKind(name, samples) {
   if (NAME_EXCLUDE.test(name)) return null;
   const hinted = NAME_HINT.test(name);
@@ -1846,7 +1847,7 @@ async function fmtFor(db, sid, t, f, kind) {
 /* ---------------- Paquete de entrega verificable ----------------
    El ZIP lleva: CSV por tabla, informe.html, manifest.json (cadena de custodia en formato de máquina) y
    SHA256SUMS.txt con el hash de cada archivo del paquete, verificable con «sha256sum -c SHA256SUMS.txt». */
-const BUILD_ID = "4babbb81e430e108702136c8bcf0680bdaa06721eb1bd89c2f82cafe4e69d401";
+const BUILD_ID = "94a1b2b8b927bfe189e27a937a57fd940ef990a0b8993f5df70e65dff1e34bfa";
 async function exportZip() {
   const db = cur(); if (!db) return;
   const t = tz(), entries = [], dbs = db.virtual ? realDbs() : [db], files = [];
