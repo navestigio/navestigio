@@ -12,22 +12,16 @@
 
 /* Layout: banco de trabajo forense — barra de caso arriba, árbol de evidencia a la izquierda, rejilla de registros a la derecha. */
 :root{
-  --bg:#f4f6f8; --panel:#ffffff; --fg:#17202b; --muted:#5d6b7a; --line:#dfe4ea;
-  --accent:#1f5fae; --accent-soft:#e6eef8; --accent-fg:#ffffff;
-  --time:#0d6b4f; --time-bg:#e5f4ee; --mark-bg:#fdf6e3; --danger-bg:#fde4e1; --glow:rgba(31,95,174,.18); --star:#a8650a; --warn-bg:#fff4dd; --warn:#7a4b00; --err:#b42318;
+  /* Navestigio usa solo tema oscuro */
+  --bg:#11161c; --panel:#18202a; --fg:#e3e9ef; --muted:#93a1b0; --line:#28323e;
+  --accent:#6ea6ec; --accent-soft:#1d2d42; --accent-fg:#0d1620;
+  --time:#73d6ae; --time-bg:#133126; --mark-bg:#2b2615; --danger-bg:#4a1c19; --glow:rgba(110,166,236,.22); --star:#f0b456; --warn-bg:#3a2c10; --warn:#f5cf8a; --err:#ff8f86;
   --sans:"IBM Plex Sans",system-ui,"Segoe UI",Roboto,sans-serif;
   --display:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;
   --ease:cubic-bezier(.2,.8,.2,1);
   --mono:"IBM Plex Mono",ui-monospace,Consolas,"Courier New",monospace;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#11161c; --panel:#18202a; --fg:#e3e9ef; --muted:#93a1b0; --line:#28323e;
-  --accent:#6ea6ec; --accent-soft:#1d2d42; --accent-fg:#0d1620;
-  --time:#73d6ae; --time-bg:#133126; --mark-bg:#2b2615; --danger-bg:#4a1c19; --glow:rgba(110,166,236,.22); --star:#f0b456; --warn-bg:#3a2c10; --warn:#f5cf8a; --err:#ff8f86; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#11161c; --panel:#18202a; --fg:#e3e9ef; --muted:#93a1b0; --line:#28323e;
-  --accent:#6ea6ec; --accent-soft:#1d2d42; --accent-fg:#0d1620;
-  --time:#73d6ae; --time-bg:#133126; --mark-bg:#2b2615; --danger-bg:#4a1c19; --glow:rgba(110,166,236,.22); --star:#f0b456; --warn-bg:#3a2c10; --warn:#f5cf8a; --err:#ff8f86; color-scheme:dark}
 html,body{height:100%}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--sans);display:flex;flex-direction:column;margin:0}
@@ -1848,7 +1842,7 @@ async function fmtFor(db, sid, t, f, kind) {
 /* ---------------- Paquete de entrega verificable ----------------
    El ZIP lleva: CSV por tabla, informe.html, manifest.json (cadena de custodia en formato de máquina) y
    SHA256SUMS.txt con el hash de cada archivo del paquete, verificable con «sha256sum -c SHA256SUMS.txt». */
-const BUILD_ID = "92c72440cd955dff692a7a277d583440ee6196faabdff57978f33e643a8b2458";
+const BUILD_ID = "58b21621e84ece181164671efcb63e793a88ed6a8e7d08044003a4cbd8ebd026";
 async function exportZip() {
   const db = cur(); if (!db) return;
   const t = tz(), entries = [], dbs = db.virtual ? realDbs() : [db], files = [];
