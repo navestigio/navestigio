@@ -1791,7 +1791,8 @@ async function saveFile(filename, data) {
     catch (e) { if (e && e.code !== "declined") toast("No se pudo guardar: " + (e.message || e.code)); }
     return;
   }
-  const blob = data instanceof Blob ? data : new Blob([data]);
+  // Siempre como binario: el navegador descarga el archivo y nunca lo interpreta como página (HTML).
+  const blob = new Blob([data], {type: "application/octet-stream"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
@@ -1847,7 +1848,7 @@ async function fmtFor(db, sid, t, f, kind) {
 /* ---------------- Paquete de entrega verificable ----------------
    El ZIP lleva: CSV por tabla, informe.html, manifest.json (cadena de custodia en formato de máquina) y
    SHA256SUMS.txt con el hash de cada archivo del paquete, verificable con «sha256sum -c SHA256SUMS.txt». */
-const BUILD_ID = "94a1b2b8b927bfe189e27a937a57fd940ef990a0b8993f5df70e65dff1e34bfa";
+const BUILD_ID = "d7a1d7621c69e9736ae8bc1c5387c13caa0cf18e1d20ad7440fa65036bb10e5d";
 async function exportZip() {
   const db = cur(); if (!db) return;
   const t = tz(), entries = [], dbs = db.virtual ? realDbs() : [db], files = [];

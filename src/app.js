@@ -854,7 +854,8 @@ async function saveFile(filename, data) {
     catch (e) { if (e && e.code !== "declined") toast("No se pudo guardar: " + (e.message || e.code)); }
     return;
   }
-  const blob = data instanceof Blob ? data : new Blob([data]);
+  // Siempre como binario: el navegador descarga el archivo y nunca lo interpreta como página (HTML).
+  const blob = new Blob([data], {type: "application/octet-stream"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
