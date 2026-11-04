@@ -11,7 +11,7 @@ Todo ocurre dentro del navegador: la evidencia no se sube a ningún servidor, no
 Descarga `navestigio-<versión>.zip` desde la sección **Releases** del repositorio y descomprímelo en una carpeta propia (no directamente en Descargas). Cada release publica también el SHA-256 del zip; en Windows puedes comprobarlo con:
 
 ```
-certutil -hashfile navestigio-3.1.zip SHA256
+certutil -hashfile navestigio-3.1.1.zip SHA256
 ```
 
 ## Cómo usarla
