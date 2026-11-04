@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+dist/
+.DS_Store
+Thumbs.db
+# Nunca subir evidencia ni resultados de casos reales
+*.sqlite
+*.db
+*-wal
+*-journal
+*.csv
+caso*/
+
+# Dependencias de las pruebas
+node_modules/

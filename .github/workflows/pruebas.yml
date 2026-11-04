@@ -1,0 +1,43 @@
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: sql.js de vendor/ es idéntico al publicado en npm
+        run: python build.py --verificar-npm
+
+      - name: Regenerar la app desde src/ y vendor/
+        run: python build.py
+
+      - name: app/navestigio.html publicada coincide con las fuentes
+        run: git diff --exit-code -- app/navestigio.html
+
+      - name: Revisar la sintaxis de los scripts de Python
+        run: python -m py_compile build.py app/servir_navestigio.py tests/fixtures.py
+
+      - name: Instalar Playwright y Chromium
+        run: |
+          npm ci --ignore-scripts
+          npx playwright install --with-deps chromium
+
+      - name: Prueba de humo en Chromium
+        run: npm test
