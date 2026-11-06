@@ -103,8 +103,12 @@ section[id]{scroll-margin-top:60px}
 .apoyo .sub{margin:0}
 .apoyo .cta{flex-direction:column;align-items:stretch;min-width:240px}
 .btn.don{justify-content:center;padding:14px 22px;font-size:16px;position:relative;overflow:hidden}
-.btn.kofi{background:var(--time);color:#0b1f17;border-color:transparent}
-.btn.kofi:hover{box-shadow:0 10px 30px -8px rgba(115,214,174,.75)}
+.btn.sponsors{background:var(--time);color:#0b1f17;border-color:transparent}
+.btn.sponsors:hover{box-shadow:0 10px 30px -8px rgba(115,214,174,.75)}
+.btn.kofi{border-color:color-mix(in srgb,var(--time) 55%,var(--line));color:var(--fg)}
+.btn.kofi svg{color:var(--time)}
+.btn.kofi:hover{background:var(--time-soft);box-shadow:0 10px 30px -10px rgba(115,214,174,.6)}
+.apoyo .nota{font-size:13px;color:var(--muted);text-align:center;margin:2px 0 0}
 .btn.paypal{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--fg)}
 .btn.paypal svg{color:var(--accent)}
 .btn.paypal:hover{background:var(--accent-soft);box-shadow:0 10px 30px -10px rgba(110,166,236,.6)}
@@ -113,11 +117,11 @@ section[id]{scroll-margin-top:60px}
 .pie-don{display:inline-flex;gap:8px;margin-left:6px;vertical-align:middle}
 .pie-don a{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-weight:600;font-size:13px;text-decoration:none;border:1px solid var(--line);color:var(--fg);transition:border-color .2s,transform .2s}
 .pie-don a svg{width:14px;height:14px}
-.pie-don a:first-child svg{color:var(--time)}.pie-don a:last-child svg{color:var(--accent)}
+.pie-don a svg{color:var(--time)}.pie-don a:last-child svg{color:var(--accent)}
 .pie-don a:hover{transform:translateY(-1px);border-color:var(--accent)}
 @media (prefers-reduced-motion:no-preference){
   .apoyo-top .ht,.btn.don .ht{animation:latido 1.8s ease-in-out infinite}
-  .btn.paypal .ht{animation-delay:.4s}
+  .btn.kofi .ht{animation-delay:.3s}.btn.paypal .ht{animation-delay:.6s}
   .apoyo::before{animation:borde 6s linear infinite}
 }
 @keyframes latido{0%,40%,100%{transform:scale(1)}15%{transform:scale(1.25)}28%{transform:scale(1.08)}}
@@ -204,7 +208,7 @@ h1 em{background:linear-gradient(90deg,var(--accent),var(--time),var(--accent));
 <header class="top"><div class="wrap">
   <a class="brand" href="#"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><circle class="lens" cx="27" cy="27" r="19"/><path class="trail" d="M14 37 L20.5 32.5 L27 29 L34 22 L40 17"/><circle class="dot" cx="14" cy="37" r="2.2"/><circle class="dot" cx="20.5" cy="32.5" r="2.7"/><circle class="dot" cx="27" cy="29" r="3.2"/><circle class="dot" cx="34" cy="22" r="3.8"/><line class="handle" x1="41" y1="41" x2="55" y2="55"/></svg>Navestigio</a>
   <nav aria-label="Secciones"><a href="#preguntas">Qué responde</a><a href="#integridad">Integridad</a><a href="#seguridad">Seguridad</a><a href="#empezar">Empezar</a><a href="https://github.com/navestigio/navestigio">GitHub</a></nav>
-  <a class="apoyo-top don" href="#apoyar"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>Apoyar</a>
+  <a class="apoyo-top don" href="#apoyar" title="GitHub Sponsors, Ko-fi o PayPal"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>Apoyar</a>
 </div></header>
 
 <main>
@@ -303,8 +307,10 @@ sha256sum -c navestigio-3.2.0.zip.sha256           # Linux o macOS</code></pre>
       <p class="sub">Navestigio es gratuito y lo desarrolla una sola persona. Si le ahorra tiempo en sus casos, una donación ayuda a mantenerlo y a sumar nuevos artefactos.</p>
     </div>
     <div class="cta">
+      <a class="btn don sponsors" href="https://github.com/sponsors/oscargarayacosta"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>Patrocinar en GitHub</a>
       <a class="btn don kofi" href="https://ko-fi.com/oscargarayacosta"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ln" d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path class="ln" d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path class="ht" d="M10 16.2l-2.4-2.3a1.5 1.5 0 0 1 2.4-1.8 1.5 1.5 0 0 1 2.4 1.8z"/></svg>Apoyar en Ko-fi</a>
       <a class="btn don paypal" href="https://www.paypal.com/donate/?hosted_button_id=BK7ND8EZR8GQJ"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>Donar con PayPal</a>
+      <p class="nota">GitHub Sponsors no cobra comisión: todo llega al proyecto.</p>
     </div>
   </div>
 </div></section>
@@ -325,7 +331,7 @@ sha256sum -c navestigio-3.2.0.zip.sha256           # Linux o macOS</code></pre>
 
 <footer><div class="wrap">
   <span>© 2026 Oscar Stiven Garay Acosta · <a href="https://github.com/navestigio/navestigio/blob/main/LICENSE">Todos los derechos reservados</a> · <a href="https://github.com/navestigio/navestigio/blob/main/LICENCIA-COMERCIAL.md">Licencia comercial</a></span>
-  <span><a href="https://github.com/navestigio/navestigio">Código</a> · <a href="https://github.com/navestigio/navestigio/releases">Versiones</a> · <a href="https://github.com/navestigio/navestigio/security/policy">Reportar una vulnerabilidad</a> <span class="pie-don don"><a href="https://ko-fi.com/oscargarayacosta"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ln" d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path class="ln" d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path class="ht" d="M10 16.2l-2.4-2.3a1.5 1.5 0 0 1 2.4-1.8 1.5 1.5 0 0 1 2.4 1.8z"/></svg>Ko-fi</a><a href="https://www.paypal.com/donate/?hosted_button_id=BK7ND8EZR8GQJ"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>PayPal</a></span></span>
+  <span><a href="https://github.com/navestigio/navestigio">Código</a> · <a href="https://github.com/navestigio/navestigio/releases">Versiones</a> · <a href="https://github.com/navestigio/navestigio/security/policy">Reportar una vulnerabilidad</a> <span class="pie-don don"><a href="https://github.com/sponsors/oscargarayacosta"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>Sponsors</a><a href="https://ko-fi.com/oscargarayacosta"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ln" d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path class="ln" d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path class="ht" d="M10 16.2l-2.4-2.3a1.5 1.5 0 0 1 2.4-1.8 1.5 1.5 0 0 1 2.4 1.8z"/></svg>Ko-fi</a><a href="https://www.paypal.com/donate/?hosted_button_id=BK7ND8EZR8GQJ"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>PayPal</a></span></span>
 </div></footer>
 </body>
 </html>

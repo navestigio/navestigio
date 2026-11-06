@@ -231,9 +231,10 @@ Si encuentras una vulnerabilidad, sigue las instrucciones de [SECURITY.md](SECUR
 
 ## Apoya el proyecto
 
-Navestigio es gratuito. Si te ahorra tiempo en tus casos, puedes apoyar su desarrollo con una donación:
+Navestigio es gratuito. Si te ahorra tiempo en tus casos, puedes apoyar su desarrollo con una donación. GitHub Sponsors no cobra comisión, así que es la opción que más ayuda:
 
 <p>
+  <a href="https://github.com/sponsors/oscargarayacosta"><img src="docs/assets/apoyar-sponsors.svg" alt="Patrocinar en GitHub" height="46"></a>
   <a href="https://ko-fi.com/oscargarayacosta"><img src="docs/assets/apoyar-kofi.svg" alt="Apoyar en Ko-fi" height="46"></a>
   <a href="https://www.paypal.com/donate/?hosted_button_id=BK7ND8EZR8GQJ"><img src="docs/assets/apoyar-paypal.svg" alt="Donar con PayPal" height="46"></a>
 </p>
