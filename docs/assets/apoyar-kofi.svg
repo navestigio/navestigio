@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210" height="46" viewBox="0 0 210 46" role="img" aria-label="Apoyar en Ko-fi">
+  <title>Apoyar en Ko-fi</title>
+  <rect x="0.5" y="0.5" width="209" height="45" rx="10" fill="#11161c" stroke="#73d6ae" stroke-width="1.5"/>
+  <g fill="none" stroke="#73d6ae" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 17h16v9a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7z"/><path d="M34 19h2.5a3.5 3.5 0 0 1 0 7H34"/></g><path d="M26 28.5l-3.2-3.1a2 2 0 0 1 3.2-2.4 2 2 0 0 1 3.2 2.4z" fill="#73d6ae"/>
+  <text x="122" y="29" fill="#e6edf3" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="600" text-anchor="middle">Apoyar en Ko-fi</text>
+</svg>
