@@ -21,7 +21,7 @@ Es para quien quiere usar Navestigio sin las condiciones de la AGPL, por ejemplo
 - distribuir una versión modificada sin publicar su código fuente;
 - recibir una versión con funciones a la medida, soporte o condiciones contractuales propias de una empresa.
 
-Las condiciones y el precio se acuerdan caso por caso. Para solicitarla escribe a **CORREO_DE_CONTACTO** indicando la organización, el uso previsto y lo que necesitas.
+Las condiciones y el precio se acuerdan caso por caso. Para solicitarla escribe a [oscargarayacosta@pm.me](mailto:oscargarayacosta@pm.me) indicando la organización, el uso previsto y lo que necesitas.
 
 ## Versiones anteriores
 
