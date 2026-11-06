@@ -229,6 +229,13 @@ Node.js y Playwright solo se usan para las pruebas; la aplicación no los necesi
 
 Si encuentras una vulnerabilidad, sigue las instrucciones de [SECURITY.md](SECURITY.md) en lugar de abrir un issue público.
 
+## Apoya el proyecto
+
+Navestigio es gratuito. Si te ahorra tiempo en tus casos, puedes apoyar su desarrollo con una donación:
+
+- [Ko-fi](https://ko-fi.com/oscargarayacosta)
+- [PayPal](https://www.paypal.com/donate/?hosted_button_id=BK7ND8EZR8GQJ)
+
 ## Licencia
 
 © 2026 Oscar Stiven Garay Acosta. Todos los derechos reservados.
