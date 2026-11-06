@@ -95,6 +95,28 @@ const sha256 = b => crypto.createHash("sha256").update(b).digest("hex"), md5 = b
     await click('.src[data-src="s:integridad"]');
     ok((await gridText()).includes("Hueco de 20 id en visits"), "tras cancelar, el caso se reconstruye con las evidencias abiertas");
 
+    console.log("Carpeta de un usuario: Safari, sesión de Firefox, extensiones y perfiles");
+    await page.setInputFiles("#folder", path.join(EV, "usuario"));
+    await page.waitForFunction(() => !document.body.classList.contains("busy"), null, {timeout: 60000}); await sleep(2500);
+    ok(pageErrors.length === 0, "la carpeta se abre sin errores " + JSON.stringify(pageErrors));
+    await click('.src[data-src="s:perfiles"]');
+    const prof = await gridText();
+    for (const t of ["Google Chrome", "Firefox", "Safari", "x1y2.default-release"]) ok(prof.includes(t), "detecta el perfil: " + t);
+    ok(/\bana\b/.test(prof), "identifica al usuario por la ruta");
+    await click('.src[data-src="s:integridad"]');
+    ok((await gridText()).includes("Historial borrado en Safari"), "detecta el tombstone de Safari como borrado de historial");
+    await click('.src[data-src="s:timeline"]');
+    await page.fill("#q", "safari3.example.com"); await page.press("#q", "Enter"); await sleep(1200);
+    ok((await gridText()).includes("Visita (Safari)"), "las visitas de Safari llegan a la línea de tiempo");
+    await page.fill("#q", "wetransfer"); await page.press("#q", "Enter"); await sleep(1200);
+    ok((await gridText()).includes("Pestaña cerrada (Firefox)"), "lee sessionstore.jsonlz4 y muestra la pestaña cerrada");
+    await page.fill("#q", ""); await page.press("#q", "Enter"); await sleep(600);
+    await click('.src[data-src="p:chrome_ext"]');
+    const ext = await gridText();
+    ok(ext.includes("Ayudante de compras") && ext.includes("<all_urls>"), "lee el manifiesto de la extensión, su nombre traducido y sus permisos sensibles");
+    await click('.src[data-src="p:ff_addons"]');
+    ok((await gridText()).includes("Grabador de pestañas"), "lee los complementos de Firefox (extensions.json)");
+
     console.log("Modo archivo local (doble clic)");
     const p2 = await ctx.newPage(), e2 = []; p2.on("pageerror", e => e2.push(String(e)));
     await p2.goto("file://" + path.join(APP, "navestigio.html").replace(/\\/g, "/")); await p2.waitForFunction(() => document.querySelectorAll(".db").length >= 3, null, {timeout: 30000});

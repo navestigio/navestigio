@@ -103,6 +103,14 @@ const EXTRACT = [
   [["extensiones"], `SELECT install_time, 'webkit', 'Extensión instalada', '', nombre, id, 'extensiones' FROM extensiones`],
   [["perfiles"], `SELECT active_time, 'unix_s', 'Perfil usado por última vez', email, nombre, carpeta, 'perfiles' FROM perfiles`],
   [["moz_historyvisits","moz_places"], `SELECT v.visit_date, 'unix_us', 'Visita (Firefox)', p.url, p.title, v.visit_type, 'moz_historyvisits' FROM moz_historyvisits v LEFT JOIN moz_places p ON p.id = v.place_id`],
+  // Safari (History.db): fechas Cocoa en segundos (REAL) desde 2001-01-01 UTC. Los tombstones van como indicador de integridad.
+  [["history_visits","history_items"], `SELECT v.visit_time, 'mac_s', 'Visita (Safari)', i.url, v.title, '', 'history_visits' FROM history_visits v LEFT JOIN history_items i ON i.id = v.history_item`],
+  // Firefox: sesión guardada (sessionstore.jsonlz4, recovery.jsonlz4…) y complementos (extensions.json)
+  [["pestanas"], `SELECT last_accessed, 'unix_ms', CASE estado WHEN 'abierta' THEN 'Pestaña abierta en la sesión (Firefox)' ELSE 'Pestaña cerrada: último uso (Firefox)' END, url, titulo, 'ventana ' || ventana || ' · ' || estado_ventana, 'pestanas' FROM pestanas WHERE actual = 'sí'`],
+  [["pestanas"], `SELECT closed_at, 'unix_ms', 'Pestaña cerrada (Firefox)', url, titulo, 'ventana ' || ventana || ' · ' || estado_ventana, 'pestanas' FROM pestanas WHERE actual = 'sí'`],
+  [["sesion"], `SELECT last_update, 'unix_ms', 'Sesión guardada (Firefox)', '', archivo, ventanas || ' ventanas · ' || pestanas_abiertas || ' pestañas abiertas · ' || pestanas_cerradas || ' cerradas', 'sesion' FROM sesion`],
+  [["complementos"], `SELECT install_date, 'unix_ms', 'Complemento instalado (Firefox)', origen, nombre, id || ' · ' || version, 'complementos' FROM complementos`],
+  [["complementos"], `SELECT update_date, 'unix_ms', 'Complemento actualizado (Firefox)', origen, nombre, id || ' · ' || version, 'complementos' FROM complementos WHERE update_date != install_date`],
 ];
 function toWebkit(v, kind) {
   if (v === null || v === undefined || v === "" || v == 0) return null;

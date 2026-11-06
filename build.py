@@ -23,7 +23,7 @@ import urllib.request
 import zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-VERSION = "3.2.0"
+VERSION = "3.3.0"
 SQLJS_VERSION = "1.15.2"
 # Integridad publicada por npm para sql.js@1.15.2 (campo dist.integrity del registro).
 SQLJS_INTEGRITY = "sha512-ZmMYFsZPZWDKIJUh3A5rdnpRV3hB/r7AijwAzSzLnfv/9CSx4obUmDtA8brAjWJWjGtUVh43nIEJ+6nl6HuOUg=="
