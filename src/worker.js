@@ -1,4 +1,4 @@
-/*! Navestigio © 2026 Oscar Stiven Garay Acosta · Licencia MIT (ver LICENSE) */
+/*! Navestigio © 2026 Oscar Stiven Garay Acosta · SPDX-License-Identifier: AGPL-3.0-only · licencia comercial disponible (ver LICENSE y LICENCIA-COMERCIAL.md) */
 "use strict";
 /* Worker de SQLite: todas las bases (evidencias y caso) viven aquí, fuera del hilo de la página.
    Si una consulta tarda demasiado (por ejemplo, una vista maliciosa con recursión infinita), la página

@@ -11,7 +11,7 @@ Todo ocurre dentro del navegador: la evidencia no se sube a ningún servidor, no
 Descarga `navestigio-<versión>.zip` desde la sección **Releases** del repositorio y descomprímelo en una carpeta propia (no directamente en Descargas). Cada release publica también el SHA-256 del zip; en Windows puedes comprobarlo con:
 
 ```
-certutil -hashfile navestigio-3.1.1.zip SHA256
+certutil -hashfile navestigio-3.2.0.zip SHA256
 ```
 
 ## Cómo usarla
@@ -231,4 +231,9 @@ Si encuentras una vulnerabilidad, sigue las instrucciones de [SECURITY.md](SECUR
 
 ## Licencia
 
-© 2026 Oscar Stiven Garay Acosta. Navestigio se distribuye bajo la licencia MIT ([LICENSE](LICENSE)). Los componentes de terceros y sus licencias están en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+© 2026 Oscar Stiven Garay Acosta. Desde la versión 3.2.0, Navestigio tiene **licencia dual**:
+
+- **AGPL-3.0** ([LICENSE](LICENSE)), gratuita. Puedes usarla, modificarla y redistribuirla; si distribuyes una versión modificada o la ofreces por red, debes publicar su código fuente bajo la misma licencia. Usarla en tus propios casos no te obliga a publicar nada, y los informes y exportaciones que genera son tuyos.
+- **Licencia comercial**, para empresas que quieran integrarla en productos cerrados, distribuir modificaciones sin publicar el código o contratar una versión con funciones a la medida. Detalles y contacto en [LICENCIA-COMERCIAL.md](LICENCIA-COMERCIAL.md).
+
+Las versiones hasta la 3.1.1 se publicaron bajo la licencia MIT. Para contribuir, lee [CONTRIBUTING.md](CONTRIBUTING.md). Los componentes de terceros y sus licencias están en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

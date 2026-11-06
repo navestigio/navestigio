@@ -11,6 +11,8 @@
 
 Las fuentes se distribuyen sin modificar, tal como las entrega Google Fonts.
 
+Compatibilidad: Navestigio se distribuye bajo AGPL-3.0 o bajo licencia comercial (ver [LICENCIA-COMERCIAL.md](LICENCIA-COMERCIAL.md)). Las licencias de estos componentes lo permiten en ambos casos: MIT y dominio público admiten integrarse en obras con cualquier licencia, y la SIL OFL 1.1 permite incrustar las fuentes en software siempre que ellas mismas sigan bajo la OFL. Por eso estos componentes conservan su propia licencia, que se reproduce abajo, y no pasan a AGPL-3.0.
+
 ## sql.js
 
 MIT license

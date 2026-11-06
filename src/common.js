@@ -1,4 +1,4 @@
-/*! Navestigio © 2026 Oscar Stiven Garay Acosta · Licencia MIT (ver LICENSE) */
+/*! Navestigio © 2026 Oscar Stiven Garay Acosta · SPDX-License-Identifier: AGPL-3.0-only · licencia comercial disponible (ver LICENSE y LICENCIA-COMERCIAL.md) */
 "use strict";
 /* Código compartido entre la página y el Worker de SQLite: fechas, reglas de alerta y línea de tiempo.
    En la página se ejecuta como un <script> normal; en el Worker se antepone al código de sql.js. */

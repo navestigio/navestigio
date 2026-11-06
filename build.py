@@ -23,7 +23,7 @@ import urllib.request
 import zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-VERSION = "3.1.1"
+VERSION = "3.2.0"
 SQLJS_VERSION = "1.15.2"
 # Integridad publicada por npm para sql.js@1.15.2 (campo dist.integrity del registro).
 SQLJS_INTEGRITY = "sha512-ZmMYFsZPZWDKIJUh3A5rdnpRV3hB/r7AijwAzSzLnfv/9CSx4obUmDtA8brAjWJWjGtUVh43nIEJ+6nl6HuOUg=="
@@ -130,7 +130,7 @@ def make_zip():
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for name in RELEASE_FILES:
             z.write(path("app", name), f"navestigio/{name}")
-        for name in ("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "SECURITY.md"):
+        for name in ("README.md", "LICENSE", "LICENCIA-COMERCIAL.md", "THIRD_PARTY_NOTICES.md", "SECURITY.md"):
             z.write(path(name), f"navestigio/{name}")
     digest = hashlib.sha256(read("dist", os.path.basename(out))).hexdigest()
     with open(out + ".sha256", "w", encoding="utf-8", newline="\n") as f:
