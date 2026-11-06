@@ -1,0 +1,108 @@
+LICENCIA DE USO DE NAVESTIGIO
+Versión 1.0 · 6 de noviembre de 2026
+
+Copyright (c) 2026 Oscar Stiven Garay Acosta. Todos los derechos reservados.
+
+Navestigio, incluidos su código fuente, su código compilado, su interfaz, su
+nombre, su logotipo y su documentación (en conjunto, "el Software"), es obra
+de Oscar Stiven Garay Acosta ("el Titular"), su único autor y propietario.
+El Software no es software libre ni de código abierto: su código se publica
+para que pueda revisarse y auditarse, no para que se reutilice.
+
+1. LICENCIA DE USO GRATUITA
+
+   El Titular le concede una licencia gratuita, mundial, no exclusiva,
+   intransferible y revocable para:
+
+   a) descargar el Software desde sus canales oficiales (el repositorio
+      github.com/navestigio/navestigio y sus publicaciones);
+   b) ejecutarlo y usarlo, para fines personales, educativos o profesionales,
+      incluido el análisis de evidencia en casos e investigaciones propios o
+      de la organización para la que trabaja;
+   c) leer y revisar el código fuente para entender su funcionamiento,
+      auditarlo o verificar su integridad;
+   d) guardar las copias necesarias para ese uso, incluidas copias de
+      respaldo y la instalación como aplicación en sus propios equipos.
+
+2. RESTRICCIONES
+
+   Salvo autorización previa y por escrito del Titular, usted NO puede:
+
+   a) modificar, adaptar o traducir el Software ni crear obras derivadas,
+      variantes o versiones alternativas a partir de él o de partes de él;
+   b) copiar, redistribuir, publicar, sublicenciar, vender, alquilar o
+      prestar el Software o partes de él, ni ponerlo a disposición de
+      terceros por cualquier medio, incluidos sitios web, repositorios,
+      servicios en red o paquetes de otras herramientas;
+   c) incluir el Software o su código en otros productos o servicios,
+      gratuitos o comerciales;
+   d) ofrecer el Software como servicio o usarlo para prestar a terceros un
+      servicio cuyo valor principal sea el propio Software;
+   e) eliminar u ocultar los avisos de autoría, copyright o licencia, ni
+      presentar el Software o una parte de él como obra propia o de otra
+      persona;
+   f) usar el nombre o el logotipo de Navestigio para identificar otro
+      producto o sugerir respaldo del Titular.
+
+   Para compartir el Software, comparta el enlace a sus canales oficiales.
+   Bifurcar ("fork") el repositorio dentro de GitHub, cuando la plataforma
+   lo permita, no concede ningún derecho de uso, modificación ni
+   distribución distinto de los de esta licencia.
+
+3. LICENCIA COMERCIAL
+
+   Para cualquier uso que esta licencia no permita, por ejemplo integrar el
+   Software en un producto, distribuirlo, adaptarlo o encargar una versión
+   con funciones a la medida, se requiere una licencia comercial firmada con
+   el Titular. Contacto: oscargarayacosta@pm.me. Más información en
+   LICENCIA-COMERCIAL.md.
+
+4. RESULTADOS
+
+   Los informes, exportaciones, archivos CSV, ZIP y demás resultados que
+   usted genere con el Software le pertenecen a usted o a su organización y
+   no quedan sujetos a esta licencia.
+
+5. COMPONENTES DE TERCEROS
+
+   El Software incorpora componentes de terceros (sql.js, SQLite y fuentes
+   tipográficas) que conservan sus propias licencias, indicadas en
+   THIRD_PARTY_NOTICES.md. Esta licencia no restringe los derechos que esas
+   licencias le conceden sobre dichos componentes.
+
+6. PROPIEDAD
+
+   Esta licencia le concede derechos de uso, no le transfiere la propiedad.
+   El Titular conserva todos los derechos que no se conceden expresamente.
+
+7. TERMINACIÓN
+
+   Esta licencia termina automáticamente si usted incumple cualquiera de sus
+   condiciones. Al terminar, debe dejar de usar el Software y eliminar las
+   copias que tenga.
+
+8. SIN GARANTÍA
+
+   EL SOFTWARE SE ENTREGA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O
+   IMPLÍCITA, INCLUIDAS LAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN
+   PARTICULAR Y NO INFRACCIÓN. Usted es responsable de validar los
+   resultados antes de usarlos como prueba o en cualquier decisión.
+
+9. LIMITACIÓN DE RESPONSABILIDAD
+
+   EN NINGÚN CASO EL TITULAR SERÁ RESPONSABLE POR DAÑOS DIRECTOS,
+   INDIRECTOS, INCIDENTALES O CONSECUENTES, NI POR PÉRDIDA DE DATOS O DE
+   INFORMACIÓN, DERIVADOS DEL USO O DE LA IMPOSIBILIDAD DE USAR EL SOFTWARE,
+   EN LA MEDIDA EN QUE LA LEY APLICABLE LO PERMITA.
+
+10. VERSIONES ANTERIORES
+
+   Las versiones 3.1.1 y anteriores se publicaron bajo la licencia MIT y
+   esas copias conservan esa licencia. Esta licencia rige desde la
+   versión 3.2.0.
+
+11. LEY APLICABLE
+
+   Esta licencia se rige por las leyes de la República de Colombia, en
+   particular por la Ley 23 de 1982 sobre derechos de autor y la Decisión
+   Andina 351 de 1993.
