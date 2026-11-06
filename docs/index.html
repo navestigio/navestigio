@@ -201,13 +201,46 @@ h1 em{background:linear-gradient(90deg,var(--accent),var(--time),var(--accent));
 @keyframes latir{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @keyframes lupaEntra{from{opacity:0;transform:translate(40px,40px) rotate(8deg)}to{opacity:1;transform:none}}
 @keyframes rastrear{0%,100%{transform:translate(0,0)}25%{transform:translate(-60px,50px)}50%{transform:translate(-110px,95px)}75%{transform:translate(50px,-55px)}}
+/* Versiones: gratuita y Enterprise */
+.planes{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch}
+.plan{position:relative;background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:18px}
+.plan.ent{background:radial-gradient(120% 90% at 100% 0%,rgba(110,166,236,.16),transparent 60%),var(--bg);border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:0 24px 60px -30px rgba(110,166,236,.55)}
+.plan .tag{align-self:flex-start;font:500 12px/1 var(--mono);padding:6px 10px;border-radius:99px;background:var(--time-soft);color:var(--time)}
+.plan.ent .tag{background:var(--accent-soft);color:var(--accent)}
+.plan h3{font:800 28px/1.1 var(--display);letter-spacing:-.02em;margin:0}
+.plan .para{color:var(--muted);margin:-8px 0 0;font-size:15.5px}
+.precio{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.precio b{font:800 40px/1 var(--display);letter-spacing:-.03em}
+.precio span{color:var(--muted);font-size:14.5px}
+.inc{list-style:none;margin:0;padding:0;display:grid;gap:9px;font-size:15px}
+.inc li{position:relative;padding-left:26px}
+.inc li::before{content:"";position:absolute;left:2px;top:.5em;width:12px;height:7px;border:solid var(--time);border-width:0 0 2.5px 2.5px;transform:rotate(-45deg)}
+.plan.ent .inc li::before{border-color:var(--accent)}
+.inc .todo{color:var(--muted);font-style:italic}
+.inc .todo::before{display:none}
+.plan .cta{margin-top:auto}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tier{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:color-mix(in srgb,var(--panel) 70%,transparent)}
+.tier small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+.tier b{display:block;font:800 22px/1.1 var(--display);margin:4px 0 2px}
+.pioneros{border:1px dashed color-mix(in srgb,var(--time) 55%,var(--line));border-radius:12px;padding:12px 14px;font-size:14.5px;color:var(--fg);background:var(--time-soft)}
+.cmp{width:100%;border-collapse:collapse;margin-top:40px;font-size:15px}
+.cmp th,.cmp td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.cmp thead th{font:700 13px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.cmp td:nth-child(n+2),.cmp th:nth-child(n+2){text-align:center;width:150px}
+.cmp .si{color:var(--time);font-weight:700}.cmp .ent{color:var(--accent);font-weight:700}.cmp .no{color:var(--muted)}
+.cmp tbody tr:hover{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+.promesa{margin-top:28px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;color:var(--muted);font-size:15px;max-width:52em}
+.promesa svg{width:26px;height:26px;color:var(--time)}
+@media (max-width:900px){.planes{grid-template-columns:1fr}}
+@media (max-width:600px){.plan{padding:22px 18px}.tiers{grid-template-columns:1fr}.cmp td:nth-child(n+2),.cmp th:nth-child(n+2){width:auto;padding-inline:8px}.cmp th,.cmp td{padding:10px 8px;font-size:14px}}
 </style>
 </head>
 <body>
 <!-- Enlaces del proyecto: si el repositorio no queda en github.com/navestigio/navestigio, cambie REPO aquí y en los enlaces de abajo. -->
 <header class="top"><div class="wrap">
   <a class="brand" href="#"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><circle class="lens" cx="27" cy="27" r="19"/><path class="trail" d="M14 37 L20.5 32.5 L27 29 L34 22 L40 17"/><circle class="dot" cx="14" cy="37" r="2.2"/><circle class="dot" cx="20.5" cy="32.5" r="2.7"/><circle class="dot" cx="27" cy="29" r="3.2"/><circle class="dot" cx="34" cy="22" r="3.8"/><line class="handle" x1="41" y1="41" x2="55" y2="55"/></svg>Navestigio</a>
-  <nav aria-label="Secciones"><a href="#preguntas">Qué responde</a><a href="#integridad">Integridad</a><a href="#seguridad">Seguridad</a><a href="#empezar">Empezar</a><a href="https://github.com/navestigio/navestigio">GitHub</a></nav>
+  <nav aria-label="Secciones"><a href="#preguntas">Qué responde</a><a href="#integridad">Integridad</a><a href="#seguridad">Seguridad</a><a href="#empezar">Empezar</a><a href="#versiones">Versiones</a><a href="https://github.com/navestigio/navestigio">GitHub</a></nav>
   <a class="apoyo-top don" href="#apoyar" title="GitHub Sponsors, Ko-fi o PayPal"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ht" d="M12 20l-7.2-6.9a4.6 4.6 0 0 1 7.2-5.8 4.6 4.6 0 0 1 7.2 5.8z"/></svg>Apoyar</a>
 </div></header>
 
@@ -329,6 +362,64 @@ sha256sum -c navestigio-3.3.0.zip.sha256           # Linux o macOS</code></pre>
     <div><h3>Extensiones</h3><p>Carpeta Extensions de Chromium y extensions.json de Firefox, con los permisos sensibles destacados.</p></div>
     <div><h3>Borrados en Safari</h3><p>Los tombstones de Safari prueban que se borró historial y de qué rango de fechas.</p></div>
   </div>
+</div></section>
+<section id="versiones" style="background:var(--panel);border-block:1px solid var(--line)"><div class="wrap">
+  <h2>Gratis para analizar. Enterprise para la organización.</h2>
+  <p class="sub">La versión gratuita seguirá siendo la mejor forma de analizar un caso. Enterprise suma lo que necesita un equipo de respuesta a incidentes: muchos equipos en un mismo caso, detección de fuga de información y casos que se guardan y se retoman.</p>
+  <div class="planes">
+    <div class="plan">
+      <span class="tag">disponible hoy</span>
+      <h3>Navestigio</h3>
+      <p class="para">Para analistas, peritos y estudiantes.</p>
+      <div class="precio"><b>Gratis</b><span>también para uso profesional</span></div>
+      <ul class="inc">
+        <li>Chrome, Edge, Brave, Opera, Firefox y Safari</li>
+        <li>Línea de tiempo unificada, alertas y búsquedas interpretadas</li>
+        <li>Registros borrados, indicadores de integridad y tombstones de Safari</li>
+        <li>Sesiones de Firefox, extensiones y perfiles detectados</li>
+        <li>Paquete de entrega verificable con SHA-256 y cadena de custodia</li>
+        <li>Funciona sin internet; la evidencia no sale del equipo</li>
+      </ul>
+      <div class="cta"><a class="btn primary" href="https://github.com/navestigio/navestigio/releases/latest">Descargar gratis</a></div>
+    </div>
+    <div class="plan ent">
+      <span class="tag">en desarrollo · acceso anticipado</span>
+      <h3>Navestigio Enterprise</h3>
+      <p class="para">Para equipos de respuesta a incidentes, consultoras y áreas de seguridad.</p>
+      <div class="precio"><b>USD 390</b><span>por analista · licencia perpetua, sin cuotas mensuales</span></div>
+      <ul class="inc">
+        <li>Todo lo de la versión gratuita</li>
+        <li><b>Caso multi-equipo y multi-usuario</b>: colecciones de KAPE, Velociraptor o una imagen montada en una sola línea de tiempo</li>
+        <li><b>Detección de exfiltración</b>: nubes personales, transferencias, webmail personal, picos de descargas e IA generativa</li>
+        <li><b>Caso persistente</b>: guarde y retome el caso cifrado, con marcadores, etiquetas y notas</li>
+        <li>Interfaz en inglés</li>
+        <li class="todo">Después: IOC propios (STIX, MISP), reglas de la organización, informe con su marca y paquete firmado</li>
+      </ul>
+      <div class="tiers" aria-label="Licencias">
+        <div class="tier"><small>Analista</small><b>USD 390</b><small>1 puesto</small></div>
+        <div class="tier"><small>Equipo</small><b>USD 1.490</b><small>hasta 5 puestos</small></div>
+        <div class="tier"><small>Organización</small><b>USD 3.900</b><small>puestos ilimitados</small></div>
+      </div>
+      <p class="pioneros"><b>Programa de pioneros:</b> 30 % de descuento para las primeras 10 organizaciones que se sumen al acceso anticipado.</p>
+      <div class="cta"><a class="btn primary" href="mailto:oscargarayacosta@pm.me?subject=Navestigio%20Enterprise%3A%20acceso%20anticipado">Solicitar acceso anticipado</a></div>
+    </div>
+  </div>
+
+  <table class="cmp">
+    <thead><tr><th>Función</th><th>Gratuita</th><th>Enterprise</th></tr></thead>
+    <tbody>
+      <tr><td>Análisis de un perfil o de la carpeta de un usuario</td><td class="si">Sí</td><td class="si">Sí</td></tr>
+      <tr><td>Integridad, registros borrados y cadena de custodia</td><td class="si">Sí</td><td class="si">Sí</td></tr>
+      <tr><td>Exportación CSV, JSONL, bodyfile y l2t</td><td class="si">Sí</td><td class="si">Sí</td></tr>
+      <tr><td>Muchos equipos y usuarios en un mismo caso</td><td class="no">—</td><td class="ent">Sí</td></tr>
+      <tr><td>Detección de exfiltración de información</td><td class="no">—</td><td class="ent">Sí</td></tr>
+      <tr><td>Guardar y retomar el caso cifrado</td><td class="no">—</td><td class="ent">Sí</td></tr>
+      <tr><td>Interfaz en inglés</td><td class="no">—</td><td class="ent">Sí</td></tr>
+      <tr><td>Soporte</td><td class="no">Issues en GitHub</td><td class="ent">Correo directo</td></tr>
+    </tbody>
+  </table>
+
+  <p class="promesa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b style="color:var(--fg)">La exactitud forense nunca se cobra.</b> Todo lo que decide si un resultado es correcto (nuevos navegadores, integridad, registros borrados y cadena de custodia) sigue llegando a la versión gratuita. Enterprise cobra por escala, automatización y trabajo en equipo.</span></p>
 </div></section>
 </main>
 
