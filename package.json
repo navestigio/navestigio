@@ -2,7 +2,7 @@
   "name": "navestigio-pruebas",
   "private": true,
   "description": "Solo para las pruebas automatizadas; la aplicación no usa Node.",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "test": "node tests/smoke.cjs"
   },

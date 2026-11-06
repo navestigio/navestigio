@@ -1,4 +1,4 @@
-/*! Navestigio © 2026 Oscar Stiven Garay Acosta · Licencia MIT (ver LICENSE) */
+/*! Navestigio © 2026 Oscar Stiven Garay Acosta · Todos los derechos reservados · SPDX-License-Identifier: LicenseRef-Navestigio · uso según LICENSE; prohibido modificar o redistribuir */
 "use strict";
 const PAGE_SRC = "<!doctype html>\n" + document.documentElement.outerHTML;
 const WASM_B64 = "@@WASM_B64@@";

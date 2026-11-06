@@ -11,7 +11,7 @@ Todo ocurre dentro del navegador: la evidencia no se sube a ningún servidor, no
 Descarga `navestigio-<versión>.zip` desde la sección **Releases** del repositorio y descomprímelo en una carpeta propia (no directamente en Descargas). Cada release publica también el SHA-256 del zip; en Windows puedes comprobarlo con:
 
 ```
-certutil -hashfile navestigio-3.1.1.zip SHA256
+certutil -hashfile navestigio-3.2.0.zip SHA256
 ```
 
 ## Cómo usarla
@@ -197,7 +197,7 @@ Las tablas `urls`, `downloads` y las demás de interés aparecen en negrita en l
 | `tests/` | Pruebas automatizadas: `fixtures.py` genera evidencias sintéticas (con borrados conocidos y archivos malformados) y `smoke.cjs` las prueba en Chromium. |
 | `.github/workflows/` | Ejecuta las pruebas en cada cambio. |
 
-`app/navestigio.html` es un único archivo de unos 1,3 MB porque incrusta sql.js, las fuentes y el código de `src/` para funcionar sin internet y con doble clic. Para comprobar que se construyó con los componentes oficiales, o para regenerarlo después de editar `src/`:
+`app/navestigio.html` es un único archivo de unos 1,3 MB porque incrusta sql.js, las fuentes y el código de `src/` para funcionar sin internet y con doble clic. Para comprobar que se construyó con los componentes oficiales, o para regenerarlo:
 
 ```
 python build.py                 # verifica vendor/SHA256SUMS y genera app/navestigio.html
@@ -231,4 +231,10 @@ Si encuentras una vulnerabilidad, sigue las instrucciones de [SECURITY.md](SECUR
 
 ## Licencia
 
-© 2026 Oscar Stiven Garay Acosta. Navestigio se distribuye bajo la licencia MIT ([LICENSE](LICENSE)). Los componentes de terceros y sus licencias están en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+© 2026 Oscar Stiven Garay Acosta. Todos los derechos reservados.
+
+Desde la versión 3.2.0, Navestigio **no es software de código abierto**. Su código se publica para que puedas revisarlo y auditarlo, y puedes usar la herramienta gratis, también en tu trabajo. No está permitido modificarla, crear variantes, redistribuirla ni venderla. Para compartirla, comparte el enlace a este repositorio. Texto completo en [LICENSE](LICENSE).
+
+Para integrarla en un producto, distribuirla o encargar una versión a la medida, hay una licencia comercial: ver [LICENCIA-COMERCIAL.md](LICENCIA-COMERCIAL.md).
+
+Las versiones 3.1.1 y anteriores se publicaron bajo la licencia MIT. Este proyecto no acepta pull requests ([CONTRIBUTING.md](CONTRIBUTING.md)). Los componentes de terceros y sus licencias están en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
