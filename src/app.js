@@ -154,7 +154,18 @@ PRESETS.push(
    `SELECT m.page_url, b.image_data AS icono, f.url AS favicon_url, b.last_updated, b.width FROM icon_mapping m JOIN favicons f ON f.id = m.icon_id LEFT JOIN favicon_bitmaps b ON b.icon_id = f.id ORDER BY b.last_updated DESC`],
   ["edge_collections", "Colecciones de Edge", ["collections","items","collections_items_relationship"],
    `SELECT c.title AS coleccion, i.title AS elemento, i.date_created, i.date_modified, CAST(i.source AS TEXT) AS origen FROM items i LEFT JOIN collections_items_relationship r ON r.item_id = i.id LEFT JOIN collections c ON c.id = r.parent_id ORDER BY i.date_created DESC`]);
-const PRIORITY = new Set(["omni_box_shortcuts","top_sites","icon_mapping","favicon_bitmaps","collections","items","marcadores","cuentas","extensiones","perfiles","preferencias","estado","urls","downloads","visits","downloads_url_chains","logins","autofill","cookies","keyword_search_terms","moz_places","moz_historyvisits","credit_cards","autofill_profiles"]);
+PRESETS.push(
+  ["safari_history", "Safari: historial (history_visits + history_items)", ["history_visits","history_items"],
+   `SELECT v.id AS visit_id, v.visit_time, i.url, v.title, i.visit_count, v.load_successful, v.redirect_source, v.redirect_destination, vt_url(i.url) AS interpretacion FROM history_visits v LEFT JOIN history_items i ON i.id = v.history_item ORDER BY v.visit_time DESC`],
+  ["safari_tombstones", "Safari: historial borrado (tombstones)", ["history_tombstones"],
+   `SELECT id, start_time, end_time, CASE WHEN url IS NULL THEN '(todas las URL del rango)' ELSE url END AS url, generation FROM history_tombstones ORDER BY end_time DESC`],
+  ["ff_session", "Firefox: pestañas de la sesión guardada", ["pestanas"],
+   `SELECT ventana, estado_ventana, pestana, estado, url, titulo, last_accessed, closed_at, fijada, entrada, vt_url(url) AS interpretacion FROM pestanas WHERE actual = 'sí' ORDER BY coalesce(closed_at, last_accessed) DESC`],
+  ["ff_addons", "Firefox: complementos instalados", ["complementos"],
+   `SELECT nombre, id, version, tipo, activo, install_date, update_date, permisos_sensibles, origen, ubicacion FROM complementos ORDER BY install_date DESC`],
+  ["chrome_ext", "Extensiones instaladas (carpeta Extensions)", ["extensiones_instaladas"],
+   `SELECT perfil, nombre, id, version, desde_webstore, permisos_sensibles, scripts_en, permisos, descripcion FROM extensiones_instaladas ORDER BY (permisos_sensibles = ''), perfil, nombre`]);
+const PRIORITY = new Set(["history_visits","history_items","history_tombstones","pestanas","sesion","complementos","extensiones_instaladas","omni_box_shortcuts","top_sites","icon_mapping","favicon_bitmaps","collections","items","marcadores","cuentas","extensiones","perfiles","preferencias","estado","urls","downloads","visits","downloads_url_chains","logins","autofill","cookies","keyword_search_terms","moz_places","moz_historyvisits","credit_cards","autofill_profiles"]);
 
 /* ---------------- Alertas ---------------- */
 const DEFAULT_RULES = `Nube/transferencia: mega.nz, mega.io, wetransfer, we.tl, drive.google, dropbox, onedrive.live, 1drv.ms, box.com, mediafire, sendspace, gofile, pcloud, icloud.com, transfer.sh, file.io, anonfiles, filemail
@@ -216,7 +227,8 @@ const CASE_SCHEMA = `CREATE TABLE eventos(momento INTEGER, tipo TEXT, artefacto 
     CREATE INDEX ev_momento ON eventos(momento); CREATE INDEX ev_tipo ON eventos(tipo, momento);
     CREATE TABLE recuperados(artefacto TEXT, url TEXT, titulo TEXT, last_visit_time INTEGER, visitas INTEGER, tecleadas INTEGER, estructura TEXT, confianza TEXT, origen TEXT, pagina INTEGER, desplazamiento INTEGER);
     CREATE TABLE integridad(momento INTEGER, momento_fin INTEGER, artefacto TEXT, indicador TEXT, prioridad TEXT, confianza TEXT, detalle TEXT, interpretacion TEXT, tabla TEXT);
-    CREATE TABLE hallazgos(id TEXT, momento INTEGER, artefacto TEXT, fuente TEXT, resumen TEXT, nota TEXT, marcado_el INTEGER, sha256 TEXT, detalle TEXT);`;
+    CREATE TABLE hallazgos(id TEXT, momento INTEGER, artefacto TEXT, fuente TEXT, resumen TEXT, nota TEXT, marcado_el INTEGER, sha256 TEXT, detalle TEXT);
+    CREATE TABLE perfiles_detectados(navegador TEXT, usuario TEXT, perfil TEXT, carpeta TEXT, evidencias INTEGER, artefactos TEXT);`;
 async function makeCase() {
   CASE = {id: "caso", label: "Análisis del caso", path: "Todas las evidencias abiertas", virtual: true, hashes: [], walInfo: null, notes: [], sample: false, size: 0,
     countCache: new Map(), sources: [], kindCache: new Map(), overrides: new Map(), queries: new Map(),
@@ -227,7 +239,8 @@ async function makeCase() {
     {id: "s:timeline", title: "Línea de tiempo unificada", kind: "case", sql: "SELECT * FROM eventos ORDER BY momento DESC", rows: 0},
     {id: "s:hallazgos", title: "Hallazgos marcados", kind: "case", sql: "SELECT * FROM hallazgos ORDER BY momento DESC", rows: 0},
     {id: "s:recuperados", title: "Registros recuperados (borrados)", kind: "case", sql: "SELECT * FROM recuperados ORDER BY last_visit_time DESC", rows: 0},
-    {id: "s:integridad", title: "Indicadores de integridad", kind: "case", sql: `SELECT * FROM integridad ORDER BY ${PRI_ORDER}, momento DESC`, rows: 0}];
+    {id: "s:integridad", title: "Indicadores de integridad", kind: "case", sql: `SELECT * FROM integridad ORDER BY ${PRI_ORDER}, momento DESC`, rows: 0},
+    {id: "s:perfiles", title: "Perfiles detectados", kind: "case", sql: "SELECT * FROM perfiles_detectados ORDER BY usuario, navegador, perfil", rows: 0}];
   CASE.src = id => CASE.sources.find(s => s.id === id);
   S.dbs.unshift(CASE);
   await rebuildFindings();
@@ -268,7 +281,34 @@ async function rebuildIntegrity() {
   await DB.call("insertMany", {id: "caso", pre: "DELETE FROM integridad", sql: "INSERT INTO integridad VALUES(CAST(? AS INTEGER),CAST(? AS INTEGER),?,?,?,?,?,?,?)", rows});
   CASE.src("s:integridad").rows = rows.length; CASE.kindCache.delete("s:integridad"); caseChanged();
 }
-async function rebuildCase() { refreshMarks(); await rebuildFindings(); await rebuildRecovered(); await rebuildIntegrity(); await rebuildTimeline(); renderSide();
+/* ---------------- Perfiles detectados ----------------
+   Al abrir una carpeta (un perfil, User Data completo o la carpeta de un usuario) se agrupan las evidencias por navegador,
+   usuario y carpeta de perfil, a partir de la ruta y de las tablas que contiene cada base. */
+const BROWSER_HINTS = [
+  [/(^|\/)EBWebView(\/|$)/i, "WebView2 (aplicación)"], [/(^|\/)(Microsoft\/Teams|MSTeams[^/]*)(\/|$)/i, "Microsoft Teams"],
+  [/(^|\/)Slack(\/|$)/i, "Slack"], [/(^|\/)discord(\/|$)/i, "Discord"], [/(^|\/)Code(\/|$)/, "Visual Studio Code"],
+  [/(^|\/)(Microsoft\/Edge|microsoft-edge)/i, "Microsoft Edge"], [/(^|\/)BraveSoftware\/Brave-Browser/i, "Brave"],
+  [/(^|\/)(Google\/Chrome|google-chrome)/i, "Google Chrome"], [/(^|\/)Vivaldi(\/|$)/i, "Vivaldi"],
+  [/(^|\/)(Opera Software|com\.operasoftware\.Opera[^/]*|opera)(\/|$)/i, "Opera"], [/(^|\/)Chromium(\/|$)/i, "Chromium"],
+  [/(^|\/)(Mozilla\/Firefox|Firefox\/Profiles|\.mozilla\/firefox)(\/|$)/i, "Firefox"], [/(^|\/)Safari(\/|$)/, "Safari"]];
+function profileOf(d) {
+  const p = String(d.path || d.label).replace(/\\/g, "/"), segs = p.split("/"), tset = new Set(d.sources.filter(s => s.id.startsWith("t:")).map(s => s.id.slice(2)));
+  const has = (...t) => t.some(x => tset.has(x));
+  const nav = (BROWSER_HINTS.find(([re]) => re.test(p)) || [])[1] || (has("moz_places", "moz_cookies", "pestanas", "complementos") ? "Firefox" : has("history_visits", "history_tombstones") ? "Safari"
+    : has("visits", "cookies", "logins", "autofill", "marcadores", "extensiones_instaladas", "preferencias") ? "Chromium (sin identificar)" : "Otro");
+  let dir = segs.slice(0, -1); if (["Network", "sessionstore-backups"].includes(dir[dir.length - 1])) dir = dir.slice(0, -1);
+  const ui = segs.findIndex(x => /^(Users|Usuarios|home)$/i.test(x));
+  return {nav, usuario: ui >= 0 && ui + 1 < segs.length - 1 ? segs[ui + 1] : "", perfil: dir.length ? dir[dir.length - 1] : "(archivos sueltos)", carpeta: dir.join("/")};
+}
+async function rebuildProfiles() {
+  const m = new Map();
+  for (const d of realDbs()) { if (d.sample) continue; const pr = profileOf(d), k = [pr.nav, pr.usuario, pr.carpeta].join("|");
+    if (!m.has(k)) m.set(k, {...pr, arts: []}); m.get(k).arts.push(d.label); }
+  const rows = [...m.values()].map(r => [r.nav, r.usuario, r.perfil, r.carpeta, r.arts.length, r.arts.join(", ")]);
+  await DB.call("insertMany", {id: "caso", pre: "DELETE FROM perfiles_detectados", sql: "INSERT INTO perfiles_detectados VALUES(?,?,?,?,?,?)", rows});
+  CASE.src("s:perfiles").rows = rows.length; CASE.kindCache.delete("s:perfiles"); caseChanged();
+}
+async function rebuildCase() { refreshMarks(); await rebuildFindings(); await rebuildRecovered(); await rebuildIntegrity(); await rebuildProfiles(); await rebuildTimeline(); renderSide();
   // el resumen solo se recalcula si sigue en pantalla (al abrir evidencia se suele saltar a otra tabla)
   clearTimeout(rebuildCase.h); rebuildCase.h = setTimeout(() => { if (S.src === "s:resumen") renderSummary(); }, 0); }
 
@@ -299,9 +339,16 @@ function integrityRows(d) {
       if (e.top.length >= 5 && e.holes > listed) add(null, null, `${nf(e.holes)} id sin usar en total en ${T}`, "Baja", "alta",
         `Se listan arriba los 5 huecos mayores (${nf(listed)} id). El resto está repartido en huecos menores.`, "Consistente con borrados puntuales o con la depuración normal del navegador.", T);
       if (lead) add(null, null, `Los primeros ${nf(lead)} id de ${T} ya no existen`, "Baja", "alta", `El id más bajo que queda es ${nf(e.mn)}.`,
-        "Consistente con la expiración automática del historial antiguo (Chrome conserva unos 90 días).", T);
+        "Consistente con la expiración automática del historial antiguo (Chrome conserva unos 90 días; Safari, un año por defecto).", T);
     } else if (e.holes > 0) add(null, null, `${nf(e.holes)} id sin usar en ${T}`, "Baja", "alta", `Entre el id ${nf(e.mn)} y el ${nf(e.mx)} hay ${nf(e.n)} filas.`,
       "Habitual: el navegador borra registros antiguos al expirar el historial. Solo es relevante junto a otros indicadores.", T);
+  }
+  if (g.tombN) {
+    for (const tb of g.tomb || []) add(wk(tb.start, "mac_s"), wk(tb.end, "mac_s"), tb.url ? "Historial de un sitio borrado en Safari" : "Historial borrado en Safari", "Alta", "alta",
+      `history_tombstones: Safari registró el borrado ${tb.url ? `de ${tb.url}` : "de todas las URL"} entre momento y momento_fin.`,
+      "Safari guarda un tombstone cada vez que se borra historial, para propagar el borrado a otros dispositivos por iCloud. Prueba que se borró el historial de ese rango; la fecha exacta en que se ejecutó el borrado no se guarda.", "history_tombstones");
+    if (g.tombN > (g.tomb || []).length) add(null, null, `${nf(g.tombN)} tombstones en total en Safari`, "Alta", "alta", `Se listan los ${nf((g.tomb || []).length)} más recientes; el resto está en la tabla history_tombstones.`,
+      "Cada tombstone es un borrado de historial registrado por Safari.", "history_tombstones");
   }
   for (const b of g.back) add(null, null, `${nf(b.n)} ${b.n === 1 ? "retroceso" : "retrocesos"} de fecha en ${b.t}`, "Media", "baja",
     `Al avanzar el id, la fecha retrocede más de 60 s ${b.n === 1 ? "una vez" : `en ${nf(b.n)} ocasiones`} (${b.n === 1 ? "" : "el mayor, "}${durTxt(b.worstSec)}).${b.syncExcluded ? " Ya se excluyeron las visitas sincronizadas." : ""}`,
@@ -321,13 +368,14 @@ function scopeInfo() {
   for (const d of dbs) for (const [k, n] of Object.entries((d.integ && d.integ.enc) || {})) if (n) enc.set(k, (enc.get(k) || 0) + n);
   const frag = dbs.reduce((a, d) => a + (d.recovered || []).filter(r => !r.lvt).length, 0), jr = dbs.filter(d => d.journal);
   const done = [`${nf(dbs.length)} ${dbs.length === 1 ? "evidencia abierta" : "evidencias abiertas"}, cada una con su SHA-256`,
-    "Tablas reconocidas de Chrome, Edge y Firefox, unidas en la línea de tiempo",
+    "Tablas reconocidas de Chrome, Edge, Firefox y Safari, unidas en la línea de tiempo",
     "Registros borrados en páginas libres, freeblocks y -wal", "Indicadores de integridad de cada base SQLite"];
   const not = [...[...enc].map(([k, n]) => `${nf(n)} ${k} cifrados: se cuentan, no se descifran`),
     ...jr.map(d => `-journal de ${d.label}: no se aplicó`),
     ...(frag ? [`${nf(frag)} ${frag === 1 ? "fragmento" : "fragmentos"} de URL sin fecha: ${frag === 1 ? "está" : "están"} en «Registros recuperados», no en la línea de tiempo`] : []),
-    "Caché del navegador y reconstrucción de páginas", "Local Storage, Session Storage e IndexedDB", "Sesiones y pestañas abiertas (Current Session, sessionstore)",
-    "Safari", "Memoria RAM", "Archivos que no se cargaron: solo se analiza lo que usted abre"];
+    "Caché del navegador y reconstrucción de páginas", "Local Storage, Session Storage e IndexedDB",
+    ...(dbs.some(d => d.sources.some(s => s.id === "t:pestanas")) ? [] : ["Sesión guardada de Firefox (sessionstore.jsonlz4): no se abrió"]),
+    "Sesiones de Chromium (carpeta Sessions, formato SNSS)", "Safari: Downloads.plist, LastSession.plist y caché", "Memoria RAM", "Archivos que no se cargaron: solo se analiza lo que usted abre"];
   return {done, not};
 }
 
@@ -464,6 +512,7 @@ async function renderSummary() {
   const nInt = Number(await one("SELECT COUNT(*) FROM integridad WHERE prioridad IN ('Alta','Media')"));
   const integ = await Q(`SELECT prioridad, indicador, artefacto, interpretacion FROM integridad ORDER BY ${PRI_ORDER}, momento DESC LIMIT 8`);
   const nIntAll = CASE.src("s:integridad").rows || 0, scope = scopeInfo();
+  const profs = (await Q("SELECT navegador, usuario, perfil, evidencias, carpeta FROM perfiles_detectados ORDER BY usuario, navegador, perfil LIMIT 40")).filter(r => r[4] || r[2] !== "(archivos sueltos)");
   const rec = CASE.src("s:recuperados").rows || 0, recDated = Number(await one("SELECT COUNT(*) FROM recuperados WHERE last_visit_time IS NOT NULL"));
   const kpis = [
     ["Evidencias abiertas", realDbs().length], ["Visitas", visits], ["Dominios distintos", hosts.size], ["Descargas", cnt("Descarga iniciada")],
@@ -511,6 +560,8 @@ async function renderSummary() {
       ${catHtml}
       <div class="chart full integ"><h3>Integridad y posibles borrados</h3><p class="sub">Hechos medidos en la estructura de cada base. La <b>prioridad</b> dice dónde mirar primero, la <b>confianza</b> qué tan sólido es el hecho y la <b>interpretación</b> con qué es consistente; ninguna afirma lo que hizo el usuario.${nIntAll ? ` Clic para ver los ${nf(nIntAll)} indicadores con su detalle.` : ""}</p>
         ${integ.length ? `<div class="ilist">${integ.map(([p, ind, a, it], i) => `<div class="irow" style="--i:${i}" tabindex="0" role="button"><span class="pri p${p}">${esc(p)}</span><div><b>${esc(ind)}</b> <span class="muted">· ${esc(a)}</span><div class="muted">${esc(it)}</div></div></div>`).join("")}</div>` : '<p class="muted">Sin indicadores: las bases abiertas no muestran huecos, fechas fuera de orden ni daño estructural.</p>'}</div>
+      ${profs.length ? `<div class="chart full profs"><h3>Perfiles detectados</h3><p class="sub">${nf(profs.length)} ${profs.length === 1 ? "perfil" : "perfiles"} según la ruta y el contenido de cada evidencia. Clic para ver la tabla completa.</p>
+        <div class="ilist">${profs.map(([nv, us, pf, n], i) => `<div class="irow prow" style="--i:${i}" tabindex="0" role="button"><span class="pri pBaja">${nf(n)}</span><div><b>${esc(nv)}</b> · ${esc(pf)}${us ? ` <span class="muted">· usuario ${esc(us)}</span>` : ""}</div></div>`).join("")}</div></div>` : ""}
       <div class="chart full scope"><h3>Alcance del análisis</h3><p class="sub">Un resultado limpio solo vale para lo que se revisó.</p>
         <div class="scols"><div><h4>Se analizó</h4><ul>${scope.done.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
         <div><h4>No se analizó</h4><ul>${scope.not.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div></div></div>
@@ -523,6 +574,7 @@ function sumGoto(f) {
 }
 $("summary").addEventListener("click", e => {
   const b = e.target.closest("[data-sum]"); if (b) { SUM_MODE = b.dataset.sum; renderSummary(); return; }
+  if (e.target.closest(".prow")) { pick("caso", "s:perfiles"); return; }
   if (e.target.closest(".irow")) { pick("caso", "s:integridad"); return; }
   const r = e.target.closest(".toprow"); if (r) { const c = r.dataset.cat, h = r.dataset.host;
     sumGoto({q: h || "", cat: c || "", msg: c ? `Línea de tiempo: alerta «${c}»${h ? ` en «${h}»` : ""}` : `Línea de tiempo filtrada por «${h}»`}); return; }
@@ -542,7 +594,34 @@ $("summary").addEventListener("mousemove", e => {
 $("summary").addEventListener("mouseleave", () => $("tip").classList.remove("on"));
 
 /* ---------------- Artefactos JSON (Bookmarks, Preferences, Local State) ---------------- */
-const JSON_NAMES = new Set(["Bookmarks", "Preferences", "Secure Preferences", "Local State"]);
+const JSON_NAMES = new Set(["Bookmarks", "Preferences", "Secure Preferences", "Local State", "extensions.json"]);
+const LZ4_NAME = /\.(jsonlz4|baklz4)(-\d+)?$|^upgrade\.jsonlz4-/i;
+async function isMozLz4File(f) { if (f.size < 12) return false; return new TextDecoder("latin1").decode(await f.slice(0, 8).arrayBuffer()) === "mozLz40\u0000"; }
+/* Extensiones de Chromium: <perfil>/Extensions/<id>/<versión>/manifest.json. Se juntan por perfil en una sola evidencia;
+   cada manifiesto conserva su propio SHA-256. Los nombres __MSG_x__ se resuelven con _locales/<idioma>/messages.json. */
+const EXT_RE = /^(.*?)(?:^|\/)Extensions\/([a-p]{32})\/([^/]+)\/manifest\.json$/;
+async function readJsonFile(f) { try { return f && f.size < 5e6 ? JSON.parse(new TextDecoder().decode(await f.arrayBuffer())) : null; } catch (e) { return null; } }
+async function loadChromeExtensions(prefix, items, byName) {
+  const hashes = [], exts = [], perfil = prefix || "(carpeta abierta)";
+  for (const [path, f, id, ver] of items) {
+    const bytes = new Uint8Array(await f.arrayBuffer()); hashes.push(await hashPair(path, bytes));
+    let m; try { m = JSON.parse(new TextDecoder().decode(bytes)); } catch (e) { continue; }
+    if (!m || typeof m !== "object") continue;
+    const dir = path.slice(0, -"manifest.json".length);
+    let msgs = null; const msg = v => { if (typeof v !== "string") return ""; const k = /^__MSG_(.+)__$/.exec(v); if (!k) return v;
+      const e = msgs && (msgs[k[1]] || msgs[k[1].toLowerCase()] || Object.entries(msgs).find(([n]) => n.toLowerCase() === k[1].toLowerCase())?.[1]); return e && e.message ? e.message : v; };
+    if (m.default_locale) msgs = await readJsonFile(byName.get(dir + "_locales/" + m.default_locale + "/messages.json"));
+    const cs = [...new Set((Array.isArray(m.content_scripts) ? m.content_scripts : []).flatMap(c => Array.isArray(c && c.matches) ? c.matches : []))];
+    exts.push({perfil, id, version: m.version || ver, nombre: msg(m.name), descripcion: msg(m.description), manifest_version: m.manifest_version ?? null, update_url: m.update_url || "",
+      permissions: Array.isArray(m.permissions) ? m.permissions : [], host_permissions: Array.isArray(m.host_permissions) ? m.host_permissions : [], content_scripts: cs, ruta: dir});
+  }
+  const id = newId(), label = "Extensions", path = (prefix ? prefix + "/" : "") + "Extensions";
+  const make = () => new TextEncoder().encode(JSON.stringify({__navestigio: "extensiones_chromium", extensiones: exts}));
+  const work = make(); await DB.call("json", {id, name: label, bytes: work}, [work.buffer]);
+  const db = {id, label, path, hashes, walInfo: null, notes: [`${nf(exts.length)} manifiestos de extensiones leídos (SHA-256 de cada uno en la cadena de custodia)`], sample: false, json: true,
+    size: items.reduce((a, it) => a + it[1].size, 0), sources: [], kindCache: new Map(), overrides: new Map(), queries: new Map(), recovered: [], reopen: async () => make()};
+  await buildSources(db); S.dbs.push(db); return db;
+}
 const newId = () => Math.random().toString(36).slice(2, 10);
 async function loadJsonEvidence(label, path, bytes, reopen) {
   const id = newId(), hashes = [await hashPair(label, bytes)], size = bytes.length;
@@ -645,13 +724,16 @@ async function openFiles(fileList) {
 async function openFilesInner(files) {
   await busy("Buscando bases SQLite…");
   const byName = new Map(files.map(f => [f.webkitRelativePath || f.name, f]));
-  const mains = [], jsons = [], fromFolder = files.some(f => f.webkitRelativePath);
+  const mains = [], jsons = [], exts = new Map(), fromFolder = files.some(f => f.webkitRelativePath);
   for (const [path, f] of byName) {
     if (/-(wal|journal|shm)$/i.test(path)) continue;
+    const em = EXT_RE.exec(path); if (em) { if (!exts.has(em[1])) exts.set(em[1], []); exts.get(em[1]).push([path, f, em[2], em[3]]); continue; }
+    if (fromFolder && /(^|\/)Extensions\/[a-p]{32}\//.test(path)) continue; // código de las extensiones: no es evidencia de navegación
     if (await isSqlite(f)) mains.push([path, f]);
+    else if ((LZ4_NAME.test(f.name) || !fromFolder) && await isMozLz4File(f)) jsons.push([path, f]);
     else if (JSON_NAMES.has(f.name) || (!fromFolder && /\.json$|^[^.]+$/i.test(f.name) && await looksJson(f))) jsons.push([path, f]);
   }
-  if (!mains.length && !jsons.length) { toast("Ninguno de los archivos es una base SQLite ni un artefacto JSON del navegador."); return; }
+  if (!mains.length && !jsons.length && !exts.size) { toast("Ninguno de los archivos es una base SQLite ni un artefacto JSON del navegador."); return; }
   let first = null;
   for (const [path, f] of mains) {
     try {
@@ -665,6 +747,10 @@ async function openFilesInner(files) {
   for (const [path, f] of jsons) {
     try { await busy(`Leyendo ${f.name}…`); const db = await loadJsonEvidence(f.name, path, new Uint8Array(await f.arrayBuffer()), async () => new Uint8Array(await f.arrayBuffer())); first = first || db; }
     catch (e) { if (e.cancelled) return; toast(`${f.name}: no es un JSON válido (${e.message})`); }
+  }
+  for (const [prefix, items] of exts) {
+    try { await busy(`Leyendo ${nf(items.length)} manifiestos de extensiones…`); const db = await loadChromeExtensions(prefix, items, byName); first = first || db; }
+    catch (e) { if (e.cancelled) return; toast(`Extensiones: ${e.message || e}`); }
   }
   await busy("Construyendo la línea de tiempo…");
   await rebuildCase(); bumpCounts();

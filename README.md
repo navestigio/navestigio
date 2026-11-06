@@ -11,7 +11,7 @@ Todo ocurre dentro del navegador: la evidencia no se sube a ningún servidor, no
 Descarga `navestigio-<versión>.zip` desde la sección **Releases** del repositorio y descomprímelo en una carpeta propia (no directamente en Descargas). Cada release publica también el SHA-256 del zip; en Windows puedes comprobarlo con:
 
 ```
-certutil -hashfile navestigio-3.2.0.zip SHA256
+certutil -hashfile navestigio-3.3.0.zip SHA256
 ```
 
 ## Cómo usarla
@@ -32,7 +32,7 @@ Para desinstalarla: en la ventana de Navestigio, menú ⋯ › Desinstalar.
 
 ## Análisis del caso (versión HTML)
 
-- **Línea de tiempo unificada** junta en una sola tabla en hora local las visitas, descargas, búsquedas, credenciales, autocompletar, cookies, atajos de la barra de direcciones y el historial de Firefox de todas las bases abiertas.
+- **Línea de tiempo unificada** junta en una sola tabla en hora local las visitas, descargas, búsquedas, credenciales, autocompletar, cookies, atajos de la barra de direcciones, el historial de Firefox y de Safari, las pestañas de la sesión guardada de Firefox y los complementos instalados de todas las bases abiertas.
 - **Filtro por fechas**: escribe "Desde/Hasta" en la hora local elegida y la columna de fecha. El filtro se convierte al formato de cada tabla (WebKit, Unix…) y se mantiene al cambiar de tabla.
 - **Hallazgos**: marca una fila con ☆ y haz doble clic para agregarle una nota. Todas quedan en "Hallazgos marcados" con su artefacto y su SHA-256. Se guardan por evidencia (según su SHA-256): solo aparecen los de las evidencias abiertas, así que no se mezclan casos. Con `iniciar_navestigio.bat` se recuerdan en ese navegador; abierto con doble clic solo duran mientras la pestaña esté abierta, porque Chrome y Edge comparten el almacenamiento entre todos los HTML locales. **Borrar hallazgos** los elimina del navegador al cerrar un caso; exporta antes el ZIP si los necesitas.
 - **Alertas**: etiquetan las filas por categoría y marcan las descargas con advertencia de peligro. Con "Solo filas con alerta" ves solo esas filas, y las palabras se editan en "Reglas de alerta". Los CSV incluyen una columna `alertas`. Categorías predeterminadas:
@@ -65,7 +65,7 @@ Navestigio mide hechos de la estructura de cada base que pueden indicar borrado 
 
 Cada indicador separa tres cosas. La **prioridad** dice dónde mirar primero. La **confianza** dice qué tan sólido es el hecho medido. La **interpretación** dice con qué es consistente el hecho, por ejemplo "consistente con un borrado de la actividad más reciente". Ninguno afirma lo que hizo el usuario. Lo mismo vale para las alertas: son una prioridad de revisión, no una prueba de conducta.
 
-El resumen incluye además **Alcance del análisis**, con lo que se revisó y lo que no: valores cifrados que se cuentan pero no se descifran, `-journal` no aplicado, caché, almacenamiento web, sesiones, Safari y memoria. Un resultado limpio solo vale para lo que se revisó.
+El resumen incluye además **Alcance del análisis**, con lo que se revisó y lo que no: valores cifrados que se cuentan pero no se descifran, `-journal` no aplicado, caché, almacenamiento web, sesiones de Chromium, los plist de Safari y memoria. Un resultado limpio solo vale para lo que se revisó.
 
 ## Interpretación de URLs y cookies
 
@@ -102,9 +102,12 @@ Al hacer clic en un día, un dominio, una categoría o un sitio de una categorí
 
 ## Artefactos soportados
 
-- **SQLite:** History, Login Data, Web Data, Cookies, Shortcuts, Top Sites, Favicons (con miniaturas de los íconos), places.sqlite de Firefox y Colecciones de Edge (`collectionsSQLite`).
+- **SQLite:** History, Login Data, Web Data, Cookies, Shortcuts, Top Sites, Favicons (con miniaturas de los íconos), places.sqlite de Firefox, Colecciones de Edge (`collectionsSQLite`) e `History.db` de Safari.
+- **Safari:** `History.db` con sus visitas en fecha Cocoa y la tabla `history_tombstones`. Cada tombstone es un borrado de historial que Safari registró, con el rango de fechas borrado; aparece como indicador de integridad de prioridad alta.
+- **Sesión de Firefox:** `sessionstore.jsonlz4` y las copias de `sessionstore-backups` (`recovery.jsonlz4`, `previous.jsonlz4`…). Muestra las pestañas abiertas y las cerradas, con su historial atrás/adelante y la fecha de último uso o de cierre.
+- **Extensiones:** la carpeta `Extensions` de Chrome, Edge y Brave (cada `manifest.json` con su nombre traducido, versión, origen y permisos) y `extensions.json` de Firefox. Los permisos que permiten leer páginas, cookies o el historial se destacan en la columna `permisos_sensibles`.
 - **JSON:** Bookmarks (marcadores y carpetas), Preferences y Secure Preferences (cuentas, extensiones, preferencias clave) y Local State (perfiles, cuenta de cada perfil, clave de cifrado). Cada JSON incluye además la tabla `json_completo` con todas sus claves.
-- Con "Abrir carpeta de perfil…" se cargan todos a la vez.
+- Con "Abrir carpeta de perfil…" se cargan todos a la vez. También puedes abrir la carpeta `User Data` completa o la carpeta de un usuario: **Perfiles detectados** agrupa las evidencias por navegador, usuario y perfil.
 
 ## Identidad
 
@@ -124,7 +127,7 @@ Al hacer clic en un día, un dominio, una categoría o un sitio de una categorí
 
 Incluye los archivos `-wal` / `-journal` junto a la base, por ejemplo `History` + `History-wal`. Esos archivos guardan registros recientes que no aparecen si solo se abre la base principal. Si abres la carpeta de perfil, se toman solos.
 
-Funciona con History, Login Data, Web Data, Cookies, Favicons, Top Sites y Shortcuts de Chrome, Edge, Brave y Opera, y con `places.sqlite` de Firefox. También puedes abrir cualquier otra base SQLite.
+Funciona con History, Login Data, Web Data, Cookies, Favicons, Top Sites y Shortcuts de Chrome, Edge, Brave y Opera, con `places.sqlite` y `sessionstore.jsonlz4` de Firefox y con `History.db` de Safari. También puedes abrir cualquier otra base SQLite.
 
 ## Protección de la evidencia
 
@@ -155,7 +158,7 @@ Si la base tiene las tablas necesarias, la herramienta crea estas vistas ya unid
 - **Línea de tiempo de navegación** une visits con urls y decodifica el tipo de transición (TYPED, LINK, RELOAD…).
 - **Descargas con cadena de redirecciones** une downloads con downloads_url_chains y decodifica el estado.
 - **Términos buscados** une keyword_search_terms con urls.
-- **Credenciales guardadas** (Login Data), **Autocompletar** (Web Data), **Cookies** e **Historial de Firefox**.
+- **Credenciales guardadas** (Login Data), **Autocompletar** (Web Data), **Cookies**, **Historial de Firefox**, **Historial de Safari** y sus **tombstones**, **Pestañas de la sesión de Firefox** y **Extensiones instaladas**.
 
 Las tablas `urls`, `downloads` y las demás de interés aparecen en negrita en la sección "Tablas clave".
 

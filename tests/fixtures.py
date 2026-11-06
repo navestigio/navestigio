@@ -5,7 +5,9 @@ Uso: python tests/fixtures.py <carpeta>
 Crea bases con indicadores de borrado conocidos y archivos malformados, para comprobar que
 Navestigio detecta lo que debe y que una evidencia hostil no rompe la aplicación.
 """
+import json
 import os
+import shutil
 import sqlite3
 import struct
 import sys
@@ -79,6 +81,96 @@ def malformed(folder, history_path):
         f.write('{"extensions": {"settings": ')
 
 
+def cocoa(unix_s):
+    return float(unix_s - 978307200)
+
+
+def safari(path):
+    """History.db de Safari con un borrado registrado (tombstone) y visitas en fecha Cocoa."""
+    c = sqlite3.connect(path)
+    c.executescript("""
+        CREATE TABLE history_items(id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL UNIQUE, domain_expansion TEXT NULL,
+                                   visit_count INTEGER NOT NULL, daily_visit_counts BLOB NOT NULL, weekly_visit_counts BLOB NULL,
+                                   autocomplete_triggers BLOB NULL, should_recompute_derived_visit_counts INTEGER NOT NULL,
+                                   visit_count_score INTEGER NOT NULL, status_code INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE history_visits(id INTEGER PRIMARY KEY AUTOINCREMENT, history_item INTEGER NOT NULL, visit_time REAL NOT NULL,
+                                    title TEXT NULL, load_successful BOOLEAN NOT NULL DEFAULT 1, http_non_get BOOLEAN NOT NULL DEFAULT 0,
+                                    synthesized BOOLEAN NOT NULL DEFAULT 0, redirect_source INTEGER NULL, redirect_destination INTEGER NULL,
+                                    origin INTEGER NOT NULL DEFAULT 0, generation INTEGER NOT NULL DEFAULT 0, attributes INTEGER NOT NULL DEFAULT 0,
+                                    score INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE history_tombstones(id INTEGER PRIMARY KEY AUTOINCREMENT, start_time REAL NOT NULL, end_time REAL NOT NULL,
+                                        url TEXT, generation INTEGER NOT NULL DEFAULT 0);""")
+    for i in range(1, 11):
+        c.execute("INSERT INTO history_items(url, visit_count, daily_visit_counts, should_recompute_derived_visit_counts, visit_count_score) VALUES(?,1,x'',0,0)",
+                  (f"https://safari{i}.example.com/",))
+        c.execute("INSERT INTO history_visits(history_item, visit_time, title) VALUES(?,?,?)", (i, cocoa(T0 + i * 300), f"Página Safari {i}"))
+    c.execute("INSERT INTO history_tombstones(start_time, end_time, url) VALUES(?,?,NULL)", (cocoa(T0 + 3600), cocoa(T0 + 7200)))
+    c.commit()
+    c.close()
+
+
+def mozlz4(data):
+    """mozLz4 válido con un solo bloque LZ4 de literales (sin compresión real; basta para probar el lector)."""
+    n = len(data)
+    out = bytearray(b"mozLz40\x00" + struct.pack("<I", n))
+    out.append(0xF0)
+    rest = n - 15
+    while rest >= 255:
+        out.append(255)
+        rest -= 255
+    out.append(rest)
+    return bytes(out + data)
+
+
+def firefox_session(path):
+    ms = T0 * 1000
+    sess = {"version": ["sessionrestore", 1], "session": {"lastUpdate": ms + 9_000_000, "startTime": ms, "recentCrashes": 0},
+            "windows": [{"tabs": [{"entries": [{"url": "https://www.bing.com/search?q=vpn+gratis", "title": "vpn gratis - Buscar"},
+                                               {"url": "https://mega.nz/folder/abc", "title": "MEGA"}], "index": 2, "lastAccessed": ms + 8_000_000}],
+                         "_closedTabs": [{"state": {"entries": [{"url": "https://wetransfer.com/", "title": "WeTransfer"}], "index": 1, "lastAccessed": ms + 5_000_000},
+                                          "closedAt": ms + 6_000_000, "title": "WeTransfer"}]}],
+            "_closedWindows": []}
+    with open(path, "wb") as f:
+        f.write(mozlz4(json.dumps(sess).encode("utf-8")))
+
+
+def firefox_addons(path):
+    ms = T0 * 1000
+    data = {"schemaVersion": 36, "addons": [{"id": "grabador@ejemplo", "version": "2.1", "type": "extension", "defaultLocale": {"name": "Grabador de pestañas"},
+                                             "installDate": ms + 1_000_000, "updateDate": ms + 1_000_000, "active": True, "userDisabled": False,
+                                             "location": "app-profile", "sourceURI": "https://addons.mozilla.org/x.xpi",
+                                             "userPermissions": {"permissions": ["tabs", "cookies"], "origins": ["<all_urls>"]}}]}
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+
+def chrome_extension(folder):
+    ext = os.path.join(folder, "Extensions", "abcdefghijklmnopabcdefghijklmnop", "1.0_0")
+    os.makedirs(os.path.join(ext, "_locales", "es"), exist_ok=True)
+    with open(os.path.join(ext, "manifest.json"), "w", encoding="utf-8") as f:
+        json.dump({"manifest_version": 3, "name": "__MSG_appName__", "version": "1.0", "default_locale": "es", "permissions": ["cookies", "storage"],
+                   "host_permissions": ["<all_urls>"], "content_scripts": [{"matches": ["https://*.banco.example/*"], "js": ["c.js"]}]}, f)
+    with open(os.path.join(ext, "_locales", "es", "messages.json"), "w", encoding="utf-8") as f:
+        json.dump({"appName": {"message": "Ayudante de compras"}}, f)
+
+
+def user_folder(root):
+    """Carpeta de un usuario con Chrome, Firefox y Safari, como la copiaría un analista."""
+    if os.path.isdir(root):
+        shutil.rmtree(root)
+    chrome = os.path.join(root, "Users", "ana", "AppData", "Local", "Google", "Chrome", "User Data", "Default")
+    ff = os.path.join(root, "Users", "ana", "AppData", "Roaming", "Mozilla", "Firefox", "Profiles", "x1y2.default-release")
+    saf = os.path.join(root, "Users", "ana", "Library", "Safari")
+    for d in (os.path.join(chrome, "Network"), ff, saf):
+        os.makedirs(d)
+    history(os.path.join(chrome, "History"))
+    cookies(os.path.join(chrome, "Network", "Cookies"))
+    chrome_extension(chrome)
+    firefox_session(os.path.join(ff, "sessionstore.jsonlz4"))
+    firefox_addons(os.path.join(ff, "extensions.json"))
+    safari(os.path.join(saf, "History.db"))
+
+
 def main():
     folder = sys.argv[1]
     os.makedirs(folder, exist_ok=True)
@@ -89,6 +181,7 @@ def main():
     cookies(os.path.join(folder, "Cookies"))
     recursive_view(os.path.join(folder, "recursiva.sqlite"))
     malformed(folder, os.path.join(folder, "History"))
+    user_folder(os.path.join(folder, "usuario"))
     print(f"[+] evidencias de prueba en {folder}")
 
 
