@@ -11,7 +11,7 @@ Todo ocurre dentro del navegador: la evidencia no se sube a ningún servidor, no
 Descarga `navestigio-<versión>.zip` desde la sección **Releases** del repositorio y descomprímelo en una carpeta propia (no directamente en Descargas). Cada release publica también el SHA-256 del zip; en Windows puedes comprobarlo con:
 
 ```
-certutil -hashfile navestigio-3.3.0.zip SHA256
+certutil -hashfile navestigio-3.4.0.zip SHA256
 ```
 
 ## Cómo usarla
@@ -150,6 +150,12 @@ Si alguna columna se detecta mal, pulsa **Columnas de fecha** y elige el formato
 La zona horaria se cambia en la barra superior y por defecto es GMT-5 (Colombia). Hay desfases fijos, incluidos los de media hora o 45 minutos (GMT+5:30, GMT+5:45), y zonas con horario de verano como `America/New_York` o `Europe/Madrid`: en estas, cada fecha usa el desfase vigente en ese momento, también en la línea de tiempo y en los gráficos del resumen. Las fechas salen en formato `dd/mm/aaaa HH:MM:SS`, igual que en el script original.
 
 El botón **Convertir valores** abre una calculadora para timestamps sueltos. 
+
+## Barra lateral
+
+- **Análisis del caso** va arriba, con el botón **Cerrar todas**, que cierra todas las evidencias para empezar en limpio con el siguiente navegador. Los hallazgos marcados se conservan.
+- **Vistas destacadas (★)** reúne justo debajo las vistas de análisis de todas las evidencias abiertas, cada una con el navegador, el perfil y el archivo de donde viene.
+- Las evidencias se agrupan por categoría (historial y descargas, cookies, credenciales y formularios, sesiones y pestañas, extensiones, marcadores y atajos, configuración) y, dentro de cada una, por navegador, usuario y perfil. Cada artefacto lleva un nombre claro y, debajo, el nombre del archivo. Las categorías y las evidencias se pliegan y se despliegan con un clic.
 
 ## Vistas de análisis (★)
 

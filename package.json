@@ -1,5 +1,6 @@
 {
   "name": "navestigio-pruebas",
+  "version": "3.4.0",
   "private": true,
   "description": "Solo para las pruebas automatizadas; la aplicación no usa Node.",
   "license": "SEE LICENSE IN LICENSE",

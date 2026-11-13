@@ -41,9 +41,24 @@ header label{display:flex;gap:6px;align-items:center;color:var(--muted);font-siz
 main{flex:1;min-height:0;display:flex}
 aside{width:300px;flex:none;overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:10px 10px 10px max(10px,env(safe-area-inset-left,0px))}
 .db{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px}
+.dbcase{margin-bottom:6px}
+.sgrp{border-bottom:1px solid var(--line);padding:2px 0 8px;margin-bottom:8px}
+.sgrp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--fg);padding:6px 4px;border-radius:6px}
+.sgrp>summary::-webkit-details-marker,.db>summary::-webkit-details-marker{display:none}
+.sgrp>summary::before,.db>summary b::before{content:"▸";display:inline-block;color:var(--muted);transition:transform .15s;margin-right:2px}
+.sgrp[open]>summary::before,.db[open]>summary b::before{transform:rotate(90deg)}
+.sgrp>summary .n{margin-left:auto;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0}
+.sgrp>summary:hover,.db>summary:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.sgrp.stars>summary{color:var(--star)}
+.ssub{font-size:11px;color:var(--muted);margin:8px 4px 4px;padding-left:6px;border-left:2px solid var(--line)}
+.sgrp .db{border-bottom:0;margin:0 0 4px 6px;padding-bottom:4px}
+.db>summary{list-style:none;cursor:pointer;border-radius:6px;padding:3px 4px}
+.db>summary b small,.src .t small{display:block;font-weight:400;font-size:11px;color:var(--muted);font-family:var(--mono);overflow-wrap:anywhere}
+.src.on .t small{color:inherit;opacity:.8}
 .dbh{display:flex;gap:6px;align-items:center;justify-content:space-between}
 .dbh b{font-weight:600;overflow-wrap:anywhere}
 .dbh button{padding:2px 8px}
+.dbcase .dbh button{border:1px solid var(--line);font-size:12px;padding:4px 10px}
 .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:9px;background:var(--warn-bg);color:var(--warn);margin-left:4px;font-weight:500}
 .meta{font-size:11px;color:var(--muted);font-family:var(--mono);overflow-wrap:anywhere;margin:4px 0 2px}
 .sect{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:8px 2px 2px}
@@ -292,7 +307,7 @@ img.thumb{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin
 <body>
 
 <header>
-  <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><circle class="lens" cx="27" cy="27" r="19"/><path class="trail" d="M14 37 L20.5 32.5 L27 29 L34 22 L40 17"/><circle class="dot d1" cx="14" cy="37" r="2.2"/><circle class="dot d2" cx="20.5" cy="32.5" r="2.7"/><circle class="dot d3" cx="27" cy="29" r="3.2"/><circle class="dot d4" cx="34" cy="22" r="3.8"/><line class="handle" x1="41" y1="41" x2="55" y2="55"/></svg><h1 class="wordmark"><b>Navestigio</b><small>Forense de navegadores · v3.3.0 · <a href="https://github.com/navestigio/navestigio/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" title="© 2026 Oscar Stiven Garay Acosta. Todos los derechos reservados. Uso gratuito según la licencia de Navestigio, sin ninguna garantía. Prohibido modificar o redistribuir.">Licencia</a></small></h1></div>
+  <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><circle class="lens" cx="27" cy="27" r="19"/><path class="trail" d="M14 37 L20.5 32.5 L27 29 L34 22 L40 17"/><circle class="dot d1" cx="14" cy="37" r="2.2"/><circle class="dot d2" cx="20.5" cy="32.5" r="2.7"/><circle class="dot d3" cx="27" cy="29" r="3.2"/><circle class="dot d4" cx="34" cy="22" r="3.8"/><line class="handle" x1="41" y1="41" x2="55" y2="55"/></svg><h1 class="wordmark"><b>Navestigio</b><small>Forense de navegadores · v3.4.0 · <a href="https://github.com/navestigio/navestigio/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" title="© 2026 Oscar Stiven Garay Acosta. Todos los derechos reservados. Uso gratuito según la licencia de Navestigio, sin ninguna garantía. Prohibido modificar o redistribuir.">Licencia</a></small></h1></div>
   <button class="primary" id="btnFiles" type="button">Abrir archivos…</button>
   <button id="btnFolder" type="button" title="Seleccione la carpeta del perfil (ej. …\User Data\Default)">Abrir carpeta de perfil…</button>
   <input id="files" type="file" multiple class="hide">
@@ -2015,11 +2030,11 @@ async function fmtFor(db, sid, t, f, kind) {
 /* ---------------- Paquete de entrega verificable ----------------
    El ZIP lleva: CSV por tabla, informe.html, manifest.json (cadena de custodia en formato de máquina) y
    SHA256SUMS.txt con el hash de cada archivo del paquete, verificable con «sha256sum -c SHA256SUMS.txt». */
-const BUILD_ID = "ebfa3e7cab57e1ab3502c963142b332f78c705fd34e42ff3d1fd90500a483f11";
+const BUILD_ID = "f8034a09ac5cf0cfa1e2aee9265207bc16f470f63ab7b0dd1b0559be8fe4bde6";
 async function exportZip() {
   const db = cur(); if (!db) return;
   const t = tz(), entries = [], dbs = db.virtual ? realDbs() : [db], files = [];
-  const lines = [`Navestigio v3.3.0 · forense de navegadores · compilación ${BUILD_ID.slice(0, 16)}`, `Generado: ${nowLocal()} (${tzLabel(t)})`, `Evidencia: ${db.path}${db.sample ? " (DATOS DE EJEMPLO)" : ""}`,
+  const lines = [`Navestigio v3.4.0 · forense de navegadores · compilación ${BUILD_ID.slice(0, 16)}`, `Generado: ${nowLocal()} (${tzLabel(t)})`, `Evidencia: ${db.path}${db.sample ? " (DATOS DE EJEMPLO)" : ""}`,
     "Hashes de la evidencia original (SHA-256 · MD5):", ...dbs.flatMap(d => d.hashes.map(([k, v, m]) => `  ${k}  ${v}  ${m || ""}`))];
   for (const d of dbs) if (d.walInfo) lines.push(`WAL aplicado (${d.label}): ${d.walInfo.commits} transacciones, ${d.walInfo.frames} frames, ${d.walInfo.pages} páginas${d.walInfo.note ? " · " + d.walInfo.note : ""}`);
   const ir = dbs.flatMap(integrityRows).sort((a, b) => ({Alta: 0, Media: 1}[a[4]] ?? 2) - ({Alta: 0, Media: 1}[b[4]] ?? 2)), sc = scopeInfo();
@@ -2049,7 +2064,7 @@ async function exportZip() {
   const sums = []; for (const [n, d] of entries) { const b = bytesOf(d); sums.push({archivo: n, bytes: b.length, sha256: await sha256(b)}); }
   const manifest = {
     formato: "navestigio-manifest/1",
-    herramienta: {nombre: "Navestigio", version: "3.3.0", compilacion: BUILD_ID, sqlite: sqliteVer, navegador: navigator.userAgent},
+    herramienta: {nombre: "Navestigio", version: "3.4.0", compilacion: BUILD_ID, sqlite: sqliteVer, navegador: navigator.userAgent},
     generado: {utc: new Date().toISOString(), local: nowLocal(), zona_horaria: tzLabel(t), regla_zona: typeof t === "string" ? "zona IANA, con horario de verano" : "desfase fijo, sin horario de verano"},
     exportacion: {vista: db.virtual ? "Análisis del caso" : db.label, filtros: "ninguno: el ZIP exporta las tablas completas"},
     evidencias: dbs.map(d => ({nombre: d.label, ruta: d.path, bytes: d.size, datos_de_ejemplo: !!d.sample, tipo: d.json ? "JSON" : "SQLite",
@@ -2084,7 +2099,7 @@ th{background:#f4f6f8;white-space:nowrap}.s{white-space:nowrap}code,.h{font-fami
 .n{background:#fdf6e3;border-left:3px solid #a8650a;padding:8px 10px;margin:12px 0}ul{margin:4px 0}
 @media print{body{margin:0}h2{break-after:avoid}tr{break-inside:avoid}}</style></head><body>
 <h1>Informe de análisis de navegador</h1>
-<p class="m">${esc(db.virtual ? "Análisis del caso: todas las evidencias abiertas" : db.path)} · generado ${esc(nowLocal())} · fechas en ${esc(tzLabel(t))} · Navestigio v3.3.0 (compilación <code>${esc(BUILD_ID.slice(0, 16))}</code>)</p>
+<p class="m">${esc(db.virtual ? "Análisis del caso: todas las evidencias abiertas" : db.path)} · generado ${esc(nowLocal())} · fechas en ${esc(tzLabel(t))} · Navestigio v3.4.0 (compilación <code>${esc(BUILD_ID.slice(0, 16))}</code>)</p>
 <div class="n">Prioridad, confianza e interpretación son cosas distintas. La <b>prioridad</b> indica dónde mirar primero. La <b>confianza</b> indica qué tan sólido es el hecho medido. La <b>interpretación</b> dice con qué es consistente el hecho; no afirma lo que hizo el usuario.</div>
 <h2>Evidencias</h2>${tbl(["Evidencia", "Ruta", "Tamaño", "SHA-256", "MD5"], dbs.flatMap(d => d.hashes.map(([k, v, m], i) => [esc(k) + (d.sample ? " (ejemplo)" : ""), i ? "" : esc(d.path), i ? "" : `<span class="s">${esc(fmtSize(d.size))}</span>`, `<span class="h">${esc(v)}</span>`, `<span class="h">${esc(m || "")}</span>`])))}
 <h2>Indicadores de integridad</h2>${tbl(["Prioridad", "Confianza", "Indicador", "Evidencia", "Fechas", "Detalle", "Interpretación"], ir.map(r => [`<span class="p ${esc(r[4])}">${esc(r[4])}</span>`, `<span class="s">${esc(r[5])}</span>`, esc(r[3]), `<span class="s">${esc(r[2])}</span>`, when(r), esc(r[6]), esc(r[7])]))}
@@ -2099,18 +2114,66 @@ ${db.virtual ? `<h2>Alertas por categoría</h2><p class="m">Prioridad de revisi�
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.remove("hide"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.add("hide"), 4500); }
 function cur() { return S.dbs.find(d => d.id === S.db); }
 function fmtSize(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : (n / 1024).toFixed(0) + " KB"; }
+/* ---------------- Barra lateral ----------------
+   Arriba el análisis del caso y las vistas destacadas (★) de todas las evidencias; debajo, las evidencias agrupadas por
+   categoría (historial, cookies, credenciales…) y por navegador y perfil, en grupos desplegables. */
+const SIDE_CATS = [
+  ["historial", "Historial y descargas", t => t.has("visits") || t.has("urls") || t.has("moz_places") || t.has("history_visits") || t.has("history_items")],
+  ["cookies", "Cookies", t => t.has("cookies") || t.has("moz_cookies")],
+  ["credenciales", "Credenciales y formularios", t => t.has("logins") || t.has("autofill") || t.has("credit_cards") || t.has("autofill_profiles")],
+  ["sesiones", "Sesiones y pestañas", t => t.has("pestanas") || t.has("sesion")],
+  ["extensiones", "Extensiones y complementos", t => t.has("extensiones_instaladas") || t.has("complementos") || t.has("extensiones")],
+  ["marcadores", "Marcadores, atajos y favicons", t => t.has("marcadores") || t.has("omni_box_shortcuts") || t.has("top_sites") || t.has("icon_mapping") || t.has("favicon_bitmaps") || t.has("collections")],
+  ["config", "Configuración del navegador", t => t.has("preferencias") || t.has("estado") || t.has("cuentas") || t.has("perfiles")],
+  ["otras", "Otras bases", () => true]];
+// Nombre claro de cada artefacto conocido; el nombre del archivo se sigue viendo debajo
+const SIDE_NAMES = [[/^(History|places\.sqlite|History\.db)$/i, "Historial de navegación y descargas"], [/^Cookies$|^cookies\.sqlite$/i, "Cookies"],
+  [/^Login Data( For Account)?$|^logins\.json$/i, "Contraseñas guardadas"], [/^Web Data$|^formhistory\.sqlite$/i, "Autocompletar, tarjetas y direcciones"],
+  [/^Shortcuts$/i, "Atajos de la barra de direcciones"], [/^Top Sites$/i, "Sitios principales"], [/^Favicons$|^favicons\.sqlite$/i, "Favicons"],
+  [/^Bookmarks$/i, "Marcadores"], [/^(Secure )?Preferences$/i, "Preferencias del perfil"], [/^Local State$/i, "Estado del navegador (Local State)"],
+  [/^extensions\.json$/i, "Complementos de Firefox"], [/^Extensions$/i, "Extensiones instaladas"], [/jsonlz4/i, "Sesión guardada de Firefox"]];
+const sideName = d => (SIDE_NAMES.find(([re]) => re.test(d.label)) || [])[1] || d.label;
+function sideCat(d) { const t = new Set(d.sources.filter(s => s.id.startsWith("t:")).map(s => s.id.slice(2))); return SIDE_CATS.find(([, , f]) => f(t)); }
+const SIDE_OPEN = new Map(); // grupos abiertos o cerrados por el usuario (clave -> bool)
+const uniqJoin = a => [...new Set(a.filter(Boolean))].join(" · ");
+const sideOpen = (k, def) => SIDE_OPEN.has(k) ? SIDE_OPEN.get(k) : def;
 function renderSide() {
   const el = $("side");
   if (!S.dbs.length) { el.innerHTML = '<p class="muted">Abra un artefacto con «Abrir archivos…» o arrástrelo a la ventana.</p>'; return; }
-  el.innerHTML = S.dbs.map(d => {
-    const item = s => `<div class="src ${s.kind}${S.db === d.id && S.src === s.id ? " on" : ""}" tabindex="0" data-db="${d.id}" data-src="${esc(s.id)}"><span class="t">${esc(s.title)}</span>${s.rows != null ? `<span class="n">${s.rows}</span>` : ""}</div>`;
-    const grp = (label, list) => list.length ? `<div class="sect">${label}</div>` + list.map(item).join("") : "";
-    if (d.virtual) return `<div class="db dbcase"><div class="dbh"><b>${esc(d.label)}</b></div><div class="meta">${realDbs().length} ${realDbs().length === 1 ? "evidencia abierta" : "evidencias abiertas"}</div>${d.sources.map(item).join("")}</div>`;
-    const wal = d.walInfo ? `<div class="meta">WAL: ${d.walInfo.commits} transacciones aplicadas${d.walInfo.note ? " · " + esc(d.walInfo.note) : ""}</div>` : "";
-    return `<div class="db"><div class="dbh"><b title="${esc(d.path)}">${esc(d.label)}${d.sample ? '<span class="tag">ejemplo</span>' : ""}</b><button type="button" data-close="${d.id}" aria-label="Cerrar ${esc(d.label)}">✕</button></div>
-      <div class="meta">${fmtSize(d.size)} · SHA-256<br>${d.hashes.map(([k, v]) => esc(k) + ": " + v).join("<br>")}</div>${wal}${d.notes.map(n => `<div class="meta">${esc(n)}</div>`).join("")}
-      ${grp("Vistas de análisis", d.sources.filter(s => s.kind === "preset"))}${grp("Tablas clave", d.sources.filter(s => s.kind === "priority"))}${grp("Otras tablas", d.sources.filter(s => s.kind === "table"))}</div>`;
-  }).join("");
+  const item = (d, s, sub) => `<div class="src ${s.kind}${S.db === d.id && S.src === s.id ? " on" : ""}" tabindex="0" data-db="${d.id}" data-src="${esc(s.id)}"><span class="t">${esc(s.title)}${sub ? `<small>${esc(sub)}</small>` : ""}</span>${s.rows != null ? `<span class="n">${s.rows}</span>` : ""}</div>`;
+  const grp = (d, label, list) => list.length ? `<div class="sect">${label}</div>` + list.map(s => item(d, s)).join("") : "";
+  const real = realDbs(), html = [];
+  if (CASE) html.push(`<div class="db dbcase"><div class="dbh"><b>${esc(CASE.label)}</b>${real.length ? `<button type="button" data-closeall title="Cierra todas las evidencias para empezar en limpio con otro navegador. Los hallazgos marcados se conservan.">Cerrar todas</button>` : ""}</div>
+    <div class="meta">${real.length} ${real.length === 1 ? "evidencia abierta" : "evidencias abiertas"}</div>${CASE.sources.map(s => item(CASE, s)).join("")}</div>`);
+  // Vistas destacadas: las vistas de análisis (★) de todas las evidencias, juntas
+  const stars = real.flatMap(d => d.sources.filter(s => s.kind === "preset").map(s => [d, s]));
+  if (stars.length) { const k = "stars", op = sideOpen(k, true), many = new Set(stars.map(([d]) => d.id)).size > 1;
+    html.push(`<details class="sgrp stars" data-k="${k}"${op ? " open" : ""}><summary>Vistas destacadas <span class="n">${stars.length}</span></summary>
+      ${stars.map(([d, s]) => { const pr = profileOf(d); return item(d, s, many ? uniqJoin([pr.nav, pr.perfil !== "(archivos sueltos)" ? pr.perfil : "", d.label + (d.sample ? " (ejemplo)" : "")]) : ""); }).join("")}</details>`); }
+  // Evidencias por categoría y, dentro, por navegador y perfil
+  const byCat = new Map();
+  for (const d of real) { const c = sideCat(d); if (!byCat.has(c[0])) byCat.set(c[0], {c, subs: new Map()});
+    const pr = profileOf(d), sk = d.sample ? "Datos de ejemplo" : uniqJoin([pr.nav, pr.usuario ? "usuario " + pr.usuario : "", pr.perfil]);
+    const g = byCat.get(c[0]).subs; if (!g.has(sk)) g.set(sk, []); g.get(sk).push(d); }
+  for (const [ck, , ] of SIDE_CATS) { const g = byCat.get(ck); if (!g) continue;
+    const n = [...g.subs.values()].reduce((a, l) => a + l.length, 0), k = "c:" + ck;
+    html.push(`<details class="sgrp" data-k="${k}"${sideOpen(k, true) ? " open" : ""}><summary>${esc(g.c[1])} <span class="n">${n}</span></summary>` + [...g.subs].map(([sk, ds]) =>
+      `<div class="ssub">${esc(sk)}</div>` + ds.map(d => {
+        const wal = d.walInfo ? `<div class="meta">WAL: ${d.walInfo.commits} transacciones aplicadas${d.walInfo.note ? " · " + esc(d.walInfo.note) : ""}</div>` : "";
+        const dk = "d:" + d.id, op = sideOpen(dk, S.db === d.id && !String(S.src).startsWith("p:"));
+        return `<details class="db" data-k="${dk}"${op ? " open" : ""}><summary class="dbh"><b title="${esc(d.path)}">${esc(sideName(d))}${d.sample ? '<span class="tag">ejemplo</span>' : ""}<small>${esc(d.label)}</small></b><button type="button" data-close="${d.id}" aria-label="Cerrar ${esc(d.label)}">✕</button></summary>
+          <div class="meta">${fmtSize(d.size)} · SHA-256<br>${d.hashes.map(([k, v]) => esc(k) + ": " + v).join("<br>")}</div>${wal}${d.notes.map(nn => `<div class="meta">${esc(nn)}</div>`).join("")}
+          ${grp(d, "Tablas clave", d.sources.filter(s => s.kind === "priority"))}${grp(d, "Otras tablas", d.sources.filter(s => s.kind === "table"))}</details>`; }).join("")).join("") + "</details>");
+  }
+  el.innerHTML = html.join("");
+}
+async function closeAll() {
+  const real = realDbs(); if (!real.length) return;
+  if (!confirm(`¿Cerrar ${real.length === 1 ? "la evidencia abierta" : `las ${real.length} evidencias abiertas`} para empezar en limpio? Los hallazgos marcados se conservan en este navegador.`)) return;
+  for (const d of real) DB.call("close", {id: d.id}).catch(() => {});
+  S.dbs = S.dbs.filter(d => d.virtual); SIDE_OPEN.clear();
+  S.db = null; showPanel("welcome");
+  await rebuildCase(); renderSide(); toast("Evidencias cerradas. Puede abrir las del siguiente navegador.");
 }
 function pickFirst(d) { const s = d.sources.find(s => s.kind === "preset") || d.sources.find(s => s.kind === "priority") || d.sources.find(s => !s.view); if (s) pick(d.id, s.id); }
 function pick(dbId, sid) {
@@ -2334,11 +2397,13 @@ if (location.protocol === "http:" && /^(127\.0\.0\.1|localhost)$/.test(location.
   $("btnInstall").onclick = async () => { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice.catch(() => {}); deferredInstall = null; $("btnInstall").classList.add("hide"); };
 }
 $("side").addEventListener("click", e => {
+  if (e.target.closest("[data-closeall]")) { e.preventDefault(); closeAll().catch(rethrowCancel); return; }
   const c = e.target.closest("[data-close]");
-  if (c) { const id = c.dataset.close; const d = S.dbs.find(x => x.id === id); if (d) DB.call("close", {id}).catch(() => {}); S.dbs = S.dbs.filter(x => x.id !== id);
+  if (c) { e.preventDefault(); const id = c.dataset.close; const d = S.dbs.find(x => x.id === id); if (d) DB.call("close", {id}).catch(() => {}); S.dbs = S.dbs.filter(x => x.id !== id);
     if (S.db === id) { S.db = null; showPanel("welcome"); } rebuildCase().then(() => { if (S.db === "caso") load(); }).catch(rethrowCancel); return; }
   const s = e.target.closest(".src"); if (s) pick(s.dataset.db, s.dataset.src);
 });
+$("side").addEventListener("toggle", e => { const k = e.target.dataset && e.target.dataset.k; if (k) SIDE_OPEN.set(k, e.target.open); }, true);
 $("side").addEventListener("keydown", e => { const s = e.target.closest(".src"); if (s && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(s.dataset.db, s.dataset.src); } });
 $("grid").addEventListener("keydown", e => { const x = e.target.closest("[data-hide]"); if (x && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setHidden(x.dataset.hide, true); renderGrid(); } });
 let RS = null;
