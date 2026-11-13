@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Navestigio · forense de navegadores</title>
-<meta name="description" content="Navestigio analiza el historial, las descargas, las cookies y las credenciales de Chrome, Edge y Firefox en una sola página que funciona sin internet. Gratis, en español.">
+<meta name="description" content="Navestigio analiza el historial, las descargas, las cookies y las credenciales de Chrome, Edge, Firefox y Safari en una sola página que funciona sin internet. Gratis, en español.">
 <meta name="author" content="Oscar Stiven Garay Acosta">
 <meta property="og:title" content="Navestigio · forense de navegadores">
 <meta property="og:description" content="Línea de tiempo, registros borrados, indicadores de integridad y entrega verificable. Sin instalar nada y sin que la evidencia salga del equipo.">
@@ -214,9 +214,9 @@ h1 em{background:linear-gradient(90deg,var(--accent),var(--time),var(--accent));
 <main>
 <div class="wrap hero">
   <div>
-    <span class="eyebrow">v3.2.0 · gratis · en español</span>
+    <span class="eyebrow">v3.3.0 · gratis · en español</span>
     <h1>Siga las huellas que deja <em>quien navega</em>.</h1>
-    <p class="lead">Navestigio analiza el historial, las descargas, las cookies y las credenciales de Chrome, Edge y Firefox en una sola página que funciona sin internet. La evidencia no sale del equipo y no se modifica.</p>
+    <p class="lead">Navestigio analiza el historial, las descargas, las cookies y las credenciales de Chrome, Edge, Firefox y Safari en una sola página que funciona sin internet. La evidencia no sale del equipo y no se modifica.</p>
     <div class="cta">
       <a class="btn primary" href="https://github.com/navestigio/navestigio/releases/latest">Descargar la última versión</a>
       <a class="btn" href="https://github.com/navestigio/navestigio">Ver el código</a>
@@ -296,8 +296,8 @@ h1 em{background:linear-gradient(90deg,var(--accent),var(--time),var(--accent));
     <li><b>Abra Navestigio</b>Doble clic en <code>iniciar_navestigio.bat</code>, o en <code>navestigio.html</code> en Chrome, Edge o Firefox.</li>
     <li><b>Cargue la evidencia</b>Arrastre los archivos o abra la carpeta del perfil. Navestigio reconoce cada artefacto.</li>
   </ol>
-  <pre><code>certutil -hashfile navestigio-3.2.0.zip SHA256      # Windows
-sha256sum -c navestigio-3.2.0.zip.sha256           # Linux o macOS</code></pre>
+  <pre><code>certutil -hashfile navestigio-3.3.0.zip SHA256      # Windows
+sha256sum -c navestigio-3.3.0.zip.sha256           # Linux o macOS</code></pre>
 </div></section>
 
 <section id="apoyar"><div class="wrap">
@@ -317,14 +317,17 @@ sha256sum -c navestigio-3.2.0.zip.sha256           # Linux o macOS</code></pre>
 
 <section style="padding-top:0"><div class="wrap">
   <h2>Artefactos soportados</h2>
-  <p class="sub">Chrome, Edge y otros navegadores basados en Chromium, y Firefox.</p>
+  <p class="sub">Chrome, Edge y otros navegadores basados en Chromium, Firefox y Safari.</p>
   <div class="arts">
-    <div><h3>Historial</h3><p>History y places.sqlite: visitas, transiciones, búsquedas, descargas con su cadena de redirecciones.</p></div>
+    <div><h3>Historial</h3><p>History, places.sqlite y History.db de Safari: visitas, transiciones, búsquedas, descargas con su cadena de redirecciones.</p></div>
     <div><h3>Credenciales y formularios</h3><p>Login Data y Web Data: credenciales guardadas (cuenta las contraseñas cifradas) y autocompletar.</p></div>
     <div><h3>Cookies</h3><p>Cookies de Chromium y Firefox, con interpretación de Google Analytics, BIG-IP y Quantcast.</p></div>
     <div><h3>Navegación rápida</h3><p>Shortcuts de la barra de direcciones, Top Sites y Favicons con su miniatura.</p></div>
     <div><h3>Perfil</h3><p>Bookmarks, Preferences, Secure Preferences y Local State: cuentas, extensiones y perfiles.</p></div>
     <div><h3>Edge</h3><p>Colecciones de Edge (collectionsSQLite).</p></div>
+    <div><h3>Sesiones</h3><p>sessionstore.jsonlz4 de Firefox: pestañas abiertas y cerradas, con su fecha de último uso o de cierre.</p></div>
+    <div><h3>Extensiones</h3><p>Carpeta Extensions de Chromium y extensions.json de Firefox, con los permisos sensibles destacados.</p></div>
+    <div><h3>Borrados en Safari</h3><p>Los tombstones de Safari prueban que se borró historial y de qué rango de fechas.</p></div>
   </div>
 </div></section>
 </main>

@@ -35,8 +35,78 @@ function insertRows(sdb, table, cols, rows) {
   const st = sdb.prepare(`INSERT INTO ${qi(table)} VALUES(${cols.map(c => c[1] === "INTEGER" ? "CAST(? AS INTEGER)" : "?").join(",")})`);
   sdb.run("BEGIN"); try { for (const r of rows) st.run(r.map(v => v === undefined ? null : typeof v === "object" && v !== null ? JSON.stringify(v) : v)); } finally { st.free(); sdb.run("COMMIT"); }
 }
+/* ---------------- mozLz4 (sessionstore.jsonlz4 de Firefox) ----------------
+   Encabezado "mozLz40\0", tamaño descomprimido (uint32 little-endian) y un bloque LZ4. Descompresor propio, con límites. */
+const MOZLZ4 = [0x6d, 0x6f, 0x7a, 0x4c, 0x7a, 0x34, 0x30, 0x00];
+const isMozLz4 = b => b.length >= 12 && MOZLZ4.every((x, i) => b[i] === x);
+function mozLz4(b) {
+  const n = (b[8] | b[9] << 8 | b[10] << 16 | b[11] << 24) >>> 0;
+  if (n > 512 * 1024 * 1024) throw new Error("mozLz4 declara un tamaño descomprimido imposible");
+  const out = new Uint8Array(n); let i = 12, o = 0;
+  const len = () => { let v = 0, x; do { if (i >= b.length) throw new Error("bloque LZ4 truncado"); x = b[i++]; v += x; } while (x === 255); return v; };
+  while (i < b.length) {
+    const tok = b[i++]; let lit = tok >> 4; if (lit === 15) lit += len();
+    if (i + lit > b.length || o + lit > n) throw new Error("bloque LZ4 inválido (literales)");
+    out.set(b.subarray(i, i + lit), o); i += lit; o += lit;
+    if (i >= b.length) break;
+    if (i + 2 > b.length) throw new Error("bloque LZ4 truncado");
+    const off = b[i] | b[i + 1] << 8; i += 2;
+    let ml = tok & 15; if (ml === 15) ml += len(); ml += 4;
+    if (!off || off > o || o + ml > n) throw new Error("bloque LZ4 inválido (referencia)");
+    for (let k = 0; k < ml; k++, o++) out[o] = out[o - off];
+  }
+  return out.subarray(0, o);
+}
+/* Pestañas de la sesión de Firefox: una fila por entrada del historial de cada pestaña (atrás/adelante); «actual» marca la que se veía */
+function sessionRows(obj) {
+  const rows = []; let nOpen = 0, nClosed = 0;
+  const tab = (t, vi, wState, ti, estado, closedAt) => {
+    if (!t || !Array.isArray(t.entries)) return;
+    const cur = Math.min(Math.max(Number(t.index) || t.entries.length, 1), t.entries.length) - 1;
+    estado === "abierta" ? nOpen++ : nClosed++;
+    t.entries.forEach((e, ei) => { if (!e || typeof e !== "object") return;
+      rows.push([vi, wState, ti, estado, ei + 1, ei === cur ? "sí" : "no", e.url || "", e.title || "", e.referrer || (e.referrerInfo ? "(referrerInfo serializado)" : ""),
+        t.lastAccessed ?? null, closedAt ?? null, t.pinned ? "sí" : "no", t.hidden ? "sí" : "no", e.originalURI == null ? "" : String(e.originalURI)]); });
+  };
+  const win = (w, vi, wState) => {
+    if (!w || typeof w !== "object") return;
+    (w.tabs || []).forEach((t, ti) => tab(t, vi, wState, ti + 1, wState === "cerrada" ? "cerrada" : "abierta", wState === "cerrada" ? w.closedAt : null));
+    (w._closedTabs || []).forEach((c, ti) => c && tab(c.state, vi, wState, ti + 1, "cerrada", c.closedAt));
+  };
+  (obj.windows || []).forEach((w, i) => win(w, i + 1, "abierta"));
+  (obj._closedWindows || []).forEach((w, i) => win(w, (obj.windows || []).length + i + 1, "cerrada"));
+  return {rows, nOpen, nClosed};
+}
+const SENSITIVE = ["<all_urls>", "*://*/*", "http://*/*", "https://*/*", "webRequest", "webRequestBlocking", "declarativeNetRequest", "cookies", "history", "tabs", "debugger",
+  "nativeMessaging", "proxy", "management", "clipboardRead", "downloads", "privacy", "browsingData", "scripting", "desktopCapture", "tabCapture", "webNavigation"];
 function buildJsonTables(sdb, name, obj) {
-  const kind = /bookmarks/i.test(name) ? "bookmarks" : /preferences/i.test(name) ? "prefs" : /local state/i.test(name) ? "localstate" : "generic";
+  const kind = obj && obj.__navestigio === "extensiones_chromium" ? "chromext" : obj && Array.isArray(obj.windows) && (obj.session || obj.version) ? "session"
+    : obj && Array.isArray(obj.addons) && "schemaVersion" in obj ? "ffaddons"
+    : /bookmarks/i.test(name) ? "bookmarks" : /preferences/i.test(name) ? "prefs" : /local state/i.test(name) ? "localstate" : "generic";
+  if (kind === "session") {
+    const {rows, nOpen, nClosed} = sessionRows(obj);
+    insertRows(sdb, "pestanas", [["ventana","INTEGER"],["estado_ventana","TEXT"],["pestana","INTEGER"],["estado","TEXT"],["entrada","INTEGER"],["actual","TEXT"],["url","TEXT"],["titulo","TEXT"],
+      ["referente","TEXT"],["last_accessed","INTEGER"],["closed_at","INTEGER"],["fijada","TEXT"],["oculta","TEXT"],["url_original","TEXT"]], rows);
+    const ss = obj.session || {};
+    insertRows(sdb, "sesion", [["archivo","TEXT"],["last_update","INTEGER"],["start_time","INTEGER"],["recent_crashes","INTEGER"],["ventanas","INTEGER"],["ventanas_cerradas","INTEGER"],
+      ["pestanas_abiertas","INTEGER"],["pestanas_cerradas","INTEGER"],["version","TEXT"]],
+      [[name, ss.lastUpdate ?? null, ss.startTime ?? null, ss.recentCrashes ?? null, (obj.windows || []).length, (obj._closedWindows || []).length, nOpen, nClosed, JSON.stringify(obj.version ?? "")]]);
+  }
+  if (kind === "ffaddons") {
+    const rows = obj.addons.filter(a => a && typeof a === "object").map(a => { const perm = a.userPermissions || {}, perms = [...(perm.permissions || []), ...(perm.origins || [])];
+      return [a.id, (a.defaultLocale && a.defaultLocale.name) || "", a.version, a.type, a.installDate ?? null, a.updateDate ?? null, a.active ? "sí" : "no", a.userDisabled ? "sí" : "no",
+        a.location || "", a.sourceURI || "", perms.join(", "), perms.filter(p => SENSITIVE.includes(p)).join(", ")]; });
+    insertRows(sdb, "complementos", [["id","TEXT"],["nombre","TEXT"],["version","TEXT"],["tipo","TEXT"],["install_date","INTEGER"],["update_date","INTEGER"],["activo","TEXT"],
+      ["deshabilitado_por_usuario","TEXT"],["ubicacion","TEXT"],["origen","TEXT"],["permisos","TEXT"],["permisos_sensibles","TEXT"]], rows);
+  }
+  if (kind === "chromext") {
+    const rows = (obj.extensiones || []).map(e => { const perms = [...(e.permissions || []), ...(e.host_permissions || [])].map(p => typeof p === "string" ? p : JSON.stringify(p));
+      return [e.perfil, e.id, e.nombre, e.version, e.manifest_version, e.update_url === "https://clients2.google.com/service/update2/crx" ? "sí" : e.update_url ? "no (" + e.update_url + ")" : "no",
+        perms.join(", "), perms.filter(p => SENSITIVE.includes(p)).join(", "), (e.content_scripts || []).join(", "), e.descripcion, e.ruta]; });
+    insertRows(sdb, "extensiones_instaladas", [["perfil","TEXT"],["id","TEXT"],["nombre","TEXT"],["version","TEXT"],["manifest_version","INTEGER"],["desde_webstore","TEXT"],["permisos","TEXT"],
+      ["permisos_sensibles","TEXT"],["scripts_en","TEXT"],["descripcion","TEXT"],["ruta","TEXT"]], rows);
+    return; // los manifiestos ya están resumidos; no se aplana el JSON sintético
+  }
   if (kind === "bookmarks" && obj.roots) {
     const bm = [], folders = [];
     const walk = (n, path, root) => {
@@ -81,7 +151,7 @@ const OPS = {
   tz({tz}) { SUM_TZ = tz; },
   open({id, bytes}) { const d = regFns(new SQL.Database(bytes)); d.run("PRAGMA query_only = ON"); DBS.set(id, d); },
   json({id, name, bytes}) {
-    const obj = JSON.parse(new TextDecoder("utf-8").decode(bytes));
+    const obj = JSON.parse(new TextDecoder("utf-8").decode(isMozLz4(bytes) ? mozLz4(bytes) : bytes));
     const d = regFns(new SQL.Database()); buildJsonTables(d, name, obj); d.run("PRAGMA query_only = ON"); DBS.set(id, d);
   },
   create({id, sql}) { const d = regFns(new SQL.Database()); if (sql) d.run(sql); DBS.set(id, d); },
@@ -137,7 +207,8 @@ const OPS = {
     const seq = tset.has("sqlite_sequence") ? new Map(all(d, "SELECT name, seq FROM sqlite_sequence").map(r => [String(r[0]), Number(r[1])])) : new Map();
     // tabla -> [columna de fecha, formato, ¿importan los huecos internos?]
     const IDT = {visits: ["visit_time", "webkit", true], downloads: ["start_time", "webkit", true], urls: ["last_visit_time", "webkit", false],
-      moz_historyvisits: ["visit_date", "unix_us", true], moz_places: ["last_visit_date", "unix_us", false], logins: ["date_created", "webkit", false]};
+      moz_historyvisits: ["visit_date", "unix_us", true], moz_places: ["last_visit_date", "unix_us", false], logins: ["date_created", "webkit", false],
+      history_visits: ["visit_time", "mac_s", true], history_items: ["", "mac_s", false]};
     for (const [t, [tc0, kind, inner]] of Object.entries(IDT)) {
       if (!tset.has(t)) continue;
       let r; try { r = all(d, `SELECT COUNT(*), MIN(rowid), MAX(rowid) FROM ${qi(t)}`)[0]; } catch (e) { continue; }
@@ -151,11 +222,18 @@ const OPS = {
       out.ids.push(e);
     }
     // Fechas que retroceden más de 60 s al avanzar el id. Chrome marca las visitas sincronizadas con originator_cache_guid.
-    for (const [t, tc, kind] of [["visits", "visit_time", "webkit"], ["moz_historyvisits", "visit_date", "unix_us"]]) {
+    // Safari marca con origin != 0 las visitas que llegaron por iCloud desde otro dispositivo
+    for (const [t, tc, kind, unit] of [["visits", "visit_time", "webkit", 1e6], ["moz_historyvisits", "visit_date", "unix_us", 1e6], ["history_visits", "visit_time", "mac_s", 1]]) {
       if (!tset.has(t) || !colSet(t).has(tc)) continue;
-      const local = t === "visits" && colSet(t).has("originator_cache_guid") ? "WHERE coalesce(originator_cache_guid,'') = ''" : "";
-      try { const r = all(d, `SELECT COUNT(*), MIN(dt) FROM (SELECT ${qi(tc)} - LAG(${qi(tc)}) OVER (ORDER BY rowid) AS dt FROM ${qi(t)} ${local}) WHERE dt < -60000000`)[0];
-        if (Number(r[0])) out.back.push({t, kind, n: Number(r[0]), worstSec: Math.round(-Number(r[1]) / 1e6), syncExcluded: !!local}); } catch (e) {}
+      const local = t === "visits" && colSet(t).has("originator_cache_guid") ? "WHERE coalesce(originator_cache_guid,'') = ''"
+        : t === "history_visits" && colSet(t).has("origin") ? "WHERE coalesce(origin, 0) = 0" : "";
+      try { const r = all(d, `SELECT COUNT(*), MIN(dt) FROM (SELECT ${qi(tc)} - LAG(${qi(tc)}) OVER (ORDER BY rowid) AS dt FROM ${qi(t)} ${local}) WHERE dt < ${-60 * unit}`)[0];
+        if (Number(r[0])) out.back.push({t, kind, n: Number(r[0]), worstSec: Math.round(-Number(r[1]) / unit), syncExcluded: !!local}); } catch (e) {}
+    }
+    // Safari: cada borrado de historial deja un tombstone con el rango borrado (y la URL si fue un solo sitio)
+    if (tset.has("history_tombstones")) {
+      out.tombN = Number(one("SELECT COUNT(*) FROM history_tombstones") || 0);
+      try { out.tomb = all(d, "SELECT start_time, end_time, url FROM history_tombstones ORDER BY end_time DESC LIMIT 50").map(r => ({start: r[0], end: r[1], url: r[2] == null ? "" : String(r[2])})); } catch (e) { out.tomb = []; }
     }
     if (tset.has("cookies") && colSet("cookies").has("last_access_utc"))
       out.cookieInv = Number(one("SELECT COUNT(*) FROM cookies WHERE last_access_utc > 0 AND creation_utc > last_access_utc + 1000000") || 0);
