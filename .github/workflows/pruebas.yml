@@ -28,8 +28,8 @@ jobs:
       - name: Regenerar la app desde src/ y vendor/
         run: python build.py
 
-      - name: app/navestigio.html publicada coincide con las fuentes
-        run: git diff --exit-code -- app/navestigio.html
+      - name: app/navestigio.html y el número de versión coinciden con las fuentes
+        run: git diff --exit-code -- app/navestigio.html README.md docs/index.html package.json
 
       - name: Revisar la sintaxis de los scripts de Python
         run: python -m py_compile build.py app/servir_navestigio.py tests/fixtures.py

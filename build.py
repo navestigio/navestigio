@@ -23,7 +23,7 @@ import urllib.request
 import zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-VERSION = "3.3.0"
+VERSION = "3.4.0"  # única fuente del número de versión: al compilar se copia a README, la página y package.json
 SQLJS_VERSION = "1.15.2"
 # Integridad publicada por npm para sql.js@1.15.2 (campo dist.integrity del registro).
 SQLJS_INTEGRITY = "sha512-ZmMYFsZPZWDKIJUh3A5rdnpRV3hB/r7AijwAzSzLnfv/9CSx4obUmDtA8brAjWJWjGtUVh43nIEJ+6nl6HuOUg=="
@@ -124,6 +124,28 @@ def build():
     print(f"[+] app/navestigio.html  {len(html.encode()):,} bytes  SHA-256 {hashlib.sha256(html.encode()).hexdigest()}")
 
 
+# Dónde aparece el número de versión fuera de la app. Al compilar se actualizan solos desde VERSION, así que una versión
+# nueva solo se cambia arriba; la integración continua comprueba que todos quedaron iguales.
+VERSION_SPOTS = [
+    (("README.md",), r"navestigio-\d+\.\d+\.\d+\.zip", "navestigio-{v}.zip"),
+    (("docs", "index.html"), r"navestigio-\d+\.\d+\.\d+\.zip", "navestigio-{v}.zip"),
+    (("docs", "index.html"), r'(<span class="eyebrow">)v\d+\.\d+\.\d+( · )', r"\g<1>v{v}\g<2>"),
+    (("package.json",), r'"version": "\d+\.\d+\.\d+"', '"version": "{v}"'),
+]
+
+
+def sync_version():
+    for parts, pat, rep in VERSION_SPOTS:
+        text = read(*parts).decode("utf-8")
+        new, n = re.subn(pat, rep.replace("{v}", VERSION), text)
+        if not n:
+            sys.exit(f"No se encontró el número de versión en {'/'.join(parts)} ({pat})")
+        if new != text:
+            with open(path(*parts), "w", encoding="utf-8", newline="\n") as f:
+                f.write(new)
+            print(f"[+] {'/'.join(parts)}: versión {VERSION}")
+
+
 def make_zip():
     os.makedirs(path("dist"), exist_ok=True)
     out = path("dist", f"navestigio-{VERSION}.zip")
@@ -146,6 +168,7 @@ if __name__ == "__main__":
     verify_sums()
     if a.verificar_npm:
         verify_npm()
+    sync_version()
     build()
     if a.zip:
         make_zip()
