@@ -52,7 +52,7 @@ const sha256 = b => crypto.createHash("sha256").update(b).digest("hex"), md5 = b
     const names = ["History", "Cookies", "recursiva.sqlite", "basura.sqlite", "truncada.sqlite", "ConWal", "ConWal-wal", "Preferences"];
     await page.setInputFiles("#files", names.map(n => path.join(EV, n)));
     await page.waitForFunction(() => !document.body.classList.contains("busy"), null, {timeout: 60000}); await sleep(2500);
-    const opened = await page.evaluate(() => [...document.querySelectorAll(".db .dbh b")].map(b => b.textContent));
+    const opened = await page.evaluate(() => [...document.querySelectorAll(".db .dbh b small")].map(b => b.textContent));
     ok(opened.includes("History") && opened.includes("Cookies"), "abre History y Cookies junto a archivos malformados: " + opened.join(", "));
     ok(pageErrors.length === 0, "ninguna evidencia malformada produce errores no controlados " + JSON.stringify(pageErrors));
 
@@ -89,6 +89,7 @@ const sha256 = b => crypto.createHash("sha256").update(b).digest("hex"), md5 = b
     ok(!/<script/i.test(files["informe.html"].toString("utf8")), "el informe HTML no contiene scripts");
 
     console.log("Vista hostil (recursión infinita) y cancelación");
+    await page.evaluate(() => document.querySelector('.src[data-src="t:infinita"]').closest("details.db").open = true);
     await page.click('.src[data-src="t:infinita"]');
     await page.waitForSelector("#busy.cancelable", {timeout: 15000}); await page.click("#btnCancelQ");
     await page.waitForFunction(() => !document.body.classList.contains("busy") && document.querySelector('.src[data-src="s:resumen"].on'), null, {timeout: 60000});
@@ -116,6 +117,25 @@ const sha256 = b => crypto.createHash("sha256").update(b).digest("hex"), md5 = b
     ok(ext.includes("Ayudante de compras") && ext.includes("<all_urls>"), "lee el manifiesto de la extensión, su nombre traducido y sus permisos sensibles");
     await click('.src[data-src="p:ff_addons"]');
     ok((await gridText()).includes("Grabador de pestañas"), "lee los complementos de Firefox (extensions.json)");
+
+    console.log("Barra lateral: categorías, vistas destacadas y cerrar todas");
+    const side = await page.evaluate(() => ({cats: [...document.querySelectorAll("#side .sgrp:not(.stars)>summary")].map(e => e.firstChild.textContent.trim()),
+      stars: document.querySelectorAll("#side .sgrp.stars .src.preset").length, firstAfterCase: (document.querySelector("#side .dbcase + details") || {}).className,
+      starSub: (document.querySelector('#side .sgrp.stars .src[data-src="p:safari_history"] small') || {}).textContent || "",
+      cardsInStars: document.querySelectorAll("#side details.db .src.preset").length}));
+    ok(["Historial y descargas", "Cookies", "Sesiones y pestañas", "Extensiones y complementos"].every(c => side.cats.includes(c)), "agrupa las evidencias por categoría: " + side.cats.join(", "));
+    ok(side.firstAfterCase === "sgrp stars" && side.stars >= 6 && side.cardsInStars === 0, "las vistas destacadas (★) van juntas justo después del análisis del caso");
+    ok(/Safari/.test(side.starSub) && /History\.db/.test(side.starSub), "cada vista destacada dice de qué navegador y archivo viene: " + side.starSub);
+    await page.click('#side .sgrp[data-k="c:cookies"]>summary'); await sleep(200);
+    ok(await page.evaluate(() => !document.querySelector('#side .sgrp[data-k="c:cookies"]').open), "las categorías se pliegan");
+    await click('.src[data-src="s:timeline"]');
+    ok(await page.evaluate(() => !document.querySelector('#side .sgrp[data-k="c:cookies"]').open), "una categoría plegada sigue plegada al cambiar de vista");
+    page.once("dialog", d => d.accept());
+    await page.click("#side [data-closeall]"); await page.waitForFunction(() => !document.body.classList.contains("busy"), null, {timeout: 60000}); await sleep(1200);
+    const after = await page.evaluate(() => ({n: realDbs().length, welcome: !document.getElementById("welcome").classList.contains("hide"), groups: document.querySelectorAll("#side .sgrp").length,
+      tl: CASE.src("s:timeline").rows}));
+    ok(after.n === 0 && after.welcome && after.groups === 0 && after.tl === 0, "«Cerrar todas» deja el caso en limpio para el siguiente navegador " + JSON.stringify(after));
+    ok(pageErrors.length === 0, "la barra lateral no produce errores " + JSON.stringify(pageErrors));
 
     console.log("Modo archivo local (doble clic)");
     const p2 = await ctx.newPage(), e2 = []; p2.on("pageerror", e => e2.push(String(e)));

@@ -151,6 +151,12 @@ La zona horaria se cambia en la barra superior y por defecto es GMT-5 (Colombia)
 
 El botón **Convertir valores** abre una calculadora para timestamps sueltos. 
 
+## Barra lateral
+
+- **Análisis del caso** va arriba, con el botón **Cerrar todas**, que cierra todas las evidencias para empezar en limpio con el siguiente navegador. Los hallazgos marcados se conservan.
+- **Vistas destacadas (★)** reúne justo debajo las vistas de análisis de todas las evidencias abiertas, cada una con el navegador, el perfil y el archivo de donde viene.
+- Las evidencias se agrupan por categoría (historial y descargas, cookies, credenciales y formularios, sesiones y pestañas, extensiones, marcadores y atajos, configuración) y, dentro de cada una, por navegador, usuario y perfil. Cada artefacto lleva un nombre claro y, debajo, el nombre del archivo. Las categorías y las evidencias se pliegan y se despliegan con un clic.
+
 ## Vistas de análisis (★)
 
 Si la base tiene las tablas necesarias, la herramienta crea estas vistas ya unidas:
